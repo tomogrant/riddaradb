@@ -7,6 +7,9 @@ export interface IMotif {
     parentId: number;
     childIds?: number[];
     hasChildren?: boolean;
-    sagaVersionIds?: [];
+    sagaMotifs: {
+        sagaVersionId: number;
+        pageChapterNumber: string | null;
+    }[];
 
 }
