@@ -3,6 +3,7 @@ package com.se.riddaradb.motif;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/motifs/")
@@ -22,6 +23,12 @@ public class MotifController {
     @GetMapping("getmotifbyid/{id}")
     MotifDto getMotifEntryById(@PathVariable int id){
         return motifService.getMotifEntryById(id);
+    }
+
+
+    @GetMapping("getmotifsbyids")
+    Collection<MotifDto> getMotifsByIds(@RequestParam(value="id") Integer[] ids){
+        return motifService.getMotifsByIds(Set.of(ids));
     }
 
     @GetMapping("searchmotifs/{searchTerm}")

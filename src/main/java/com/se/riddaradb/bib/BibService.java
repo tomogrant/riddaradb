@@ -1,7 +1,11 @@
 package com.se.riddaradb.bib;
 
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.saga.SagaEntity;
 import com.se.riddaradb.saga.SagaRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.ObjectNotFoundException;
+import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,7 +35,7 @@ public class BibService {
     public BibDto getBibEntryById(int id){
         return bibRepository.findById(id)
                 .map(bibMapper::mapToDto)
-                .orElse(null);
+                .orElseThrow(() -> new ResourceNotFoundException("Bibliography entry with ID " + id + " not found"));
     }
 
     public BibDto saveBibEntry(BibDto bibDto){

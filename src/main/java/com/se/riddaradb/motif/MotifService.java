@@ -60,6 +60,13 @@ public class MotifService {
         return childMotifs;
     }
 
+    public Collection<MotifDto> getMotifsByIds(Set<Integer> ids){
+        return motifRepository.findAllById(ids)
+                .stream()
+                .map(motifMapper::mapToDto)
+                .collect(Collectors.toSet());
+    }
+
     public MotifDto updateMotifEntry(MotifDto motifDto){
         MotifEntity motifEntity = motifRepository.findById(motifDto.getId()).orElseThrow();
 

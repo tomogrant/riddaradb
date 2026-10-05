@@ -2,6 +2,7 @@ package com.se.riddaradb.motif;
 
 import com.se.riddaradb.sagaversion.SagaVersionMotifEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,10 +15,13 @@ public class MotifEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String motifCode;
 
+    @NotBlank
     private String motifName;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)

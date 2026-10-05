@@ -27,6 +27,7 @@ public class MsEntity {
 
     private String fasnlLink;
 
+    @Column(columnDefinition = "TEXT")
     private String description;
 
     @OneToMany(mappedBy = "msEntity", orphanRemoval = true)

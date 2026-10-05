@@ -1,5 +1,7 @@
 package com.se.riddaradb.saga;
 
+import jakarta.validation.Valid;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.Set;
 
@@ -26,8 +28,8 @@ public class SagaController {
     Set<SagaTitleDto> getSagaTitles() { return sagaService.getSagaTitles();}
 
     @PostMapping("postsaga")
-    SagaResponseDto postSaga(@RequestBody SagaRequestDto sagaRequestDto){
-        return sagaService.saveSaga(sagaRequestDto);
+    ResponseEntity<SagaResponseDto> postSaga(@RequestBody @Valid SagaRequestDto sagaRequestDto){
+        return ResponseEntity.ok(sagaService.saveSaga(sagaRequestDto));
     }
 
     @PutMapping("putsaga")

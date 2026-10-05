@@ -17,24 +17,19 @@ public class UserEntity {
 
     @Column(unique = true)
     @NotBlank
-    @NotNull
     private String username;
 
     @Column(unique = true)
     @NotBlank
-    @NotNull
     private String email;
 
     @NotBlank
-    @NotNull
     private String firstName;
 
     @NotBlank
-    @NotNull
     private String lastNames;
 
     @NotBlank
-    @NotNull
     private String password;
 
     @NotEmpty

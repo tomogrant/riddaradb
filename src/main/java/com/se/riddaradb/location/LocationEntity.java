@@ -3,6 +3,7 @@ package com.se.riddaradb.location;
 import com.se.riddaradb.character.CharacterEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,6 +16,7 @@ public class LocationEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     int id;
 
+    @NotBlank
     String name;
 
     @Enumerated(EnumType.STRING)
