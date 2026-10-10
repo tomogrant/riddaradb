@@ -1,5 +1,6 @@
 package com.se.riddaradb.ms;
 
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.motif.MotifSagaVersionDto;
 import com.se.riddaradb.saga.*;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
@@ -47,17 +48,17 @@ public class MsService {
     }
 
     public MsDto getMsEntryById(int id){
-        if (msRepository.findById(id).isPresent()){
-            return msMapper.mapToDto(msRepository.findById(id).get());
-        }
-        else {
-            return null;
-        }
+
+        MsEntity msEntity = msRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MS not found in database"));
+        
+        return msMapper.mapToDto(msEntity);
     }
 
     public MsDto updateMsEntry(MsDto msDto){
 
-        MsEntity msEntity = msRepository.findById(msDto.getId()).orElseThrow();
+        MsEntity msEntity = msRepository.findById(msDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Manuscript entity not found in database"));
 
         msEntity.setName(msDto.getName());
         msEntity.setShelfmark(msDto.getShelfmark());
@@ -122,7 +123,8 @@ public class MsService {
         sagaMsRepository.findByMsEntityId(msDto.getId()).forEach(sagaMs -> {
             if (!newMsSagaIds.contains(sagaMs.getSagaEntity().getId())){
                 sagaRepository.findById(sagaMs.getSagaEntity().getId()).ifPresent(saga ->
-                        saga.removeMs(msRepository.findById(sagaMs.getMsEntity().getId()).orElseThrow()));
+                        saga.removeMs(msRepository.findById(sagaMs.getMsEntity().getId())
+                                .orElseThrow(() -> new ResourceNotFoundException("Manuscript entity not found in database"))));
             }
         });
     }

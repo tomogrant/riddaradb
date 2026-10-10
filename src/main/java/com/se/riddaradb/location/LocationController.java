@@ -1,5 +1,6 @@
 package com.se.riddaradb.location;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -24,12 +25,12 @@ public class LocationController {
     }
 
     @PostMapping("/postlocation")
-    LocationDto postLocationEntry(@RequestBody LocationDto locationDto){
+    LocationDto postLocationEntry(@RequestBody @Valid LocationDto locationDto){
         return locationService.saveLocationEntry(locationDto);
     }
 
     @PutMapping("/putlocation")
-    LocationDto putLocationEntry(@RequestBody LocationDto locationDto){
+    LocationDto putLocationEntry(@RequestBody @Valid LocationDto locationDto){
         return locationService.saveLocationEntry(locationDto);
     }
 

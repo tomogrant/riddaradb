@@ -1,5 +1,6 @@
 package com.se.riddaradb.character;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -23,12 +24,12 @@ public class CharacterController {
     }
 
     @PostMapping("/postcharacter")
-    CharacterDto postCharacterEntry(@RequestBody CharacterDto characterDto){
+    CharacterDto postCharacterEntry(@RequestBody @Valid CharacterDto characterDto){
         return characterService.saveCharacterEntry(characterDto);
     }
 
     @PutMapping("/putcharacter")
-    CharacterDto putCharacterEntry(@RequestBody CharacterDto characterDto){
+    CharacterDto putCharacterEntry(@RequestBody @Valid CharacterDto characterDto){
         return characterService.saveCharacterEntry(characterDto);
     }
 

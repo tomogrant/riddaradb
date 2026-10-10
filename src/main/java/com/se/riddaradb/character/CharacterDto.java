@@ -1,11 +1,15 @@
 package com.se.riddaradb.character;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class CharacterDto {
 
     int id;
+
+    @NotBlank
     String name;
     CharacterEntity.Species species;
     String realWorldRef;

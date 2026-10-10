@@ -55,7 +55,8 @@ public class BibService {
             bibEntity = bibMapper.mapFromDto(bibDto);
         }
         else{
-            bibEntity = bibRepository.findById(bibDto.getId()).orElseThrow();
+            bibEntity = bibRepository.findById(bibDto.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Bibliography entry not found in database"));
             bibMapper.updateBibEntity(bibEntity, bibDto);
         }
 

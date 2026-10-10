@@ -1,5 +1,6 @@
 package com.se.riddaradb.motif;
 
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.sagaversion.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -68,7 +69,8 @@ public class MotifService {
     }
 
     public MotifDto updateMotifEntry(MotifDto motifDto){
-        MotifEntity motifEntity = motifRepository.findById(motifDto.getId()).orElseThrow();
+        MotifEntity motifEntity = motifRepository.findById(motifDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Motif not found in database"));
 
         motifEntity.setMotifCode(motifDto.getMotifCode());
         motifEntity.setMotifName(motifDto.getMotifName());
@@ -145,10 +147,12 @@ public class MotifService {
 
     public void deleteMotifEntryById(int id){
 
-        MotifEntity motifEntity = motifRepository.findById(id).orElseThrow();
+        MotifEntity motifEntity = motifRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Motif entity not found in database"));
 
         if (motifEntity.getParent() != null){
-            MotifEntity motifParent = motifRepository.findById(motifEntity.getParent().getId()).orElseThrow();
+            MotifEntity motifParent = motifRepository.findById(motifEntity.getParent().getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Motif parent not found in database"));
             motifParent.getChildren().removeIf(child -> child.getId() == id);
         }
 
@@ -215,7 +219,8 @@ public class MotifService {
         boolean hasParent = true;
 
         while (hasParent){
-            MotifEntity motif = motifRepository.findById(localMotifId).orElseThrow();
+            MotifEntity motif = motifRepository.findById(localMotifId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Motif entity not found in database"));
 
             if (motif.getParent() == null){
                 hasParent = false;

@@ -1,6 +1,7 @@
 package com.se.riddaradb.ms;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,10 +13,13 @@ public class MsRepositoryEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String name;
 
+    @NotBlank
     private String city;
 
+    @NotBlank
     private String country;
 
     @OneToMany(mappedBy = "msRepositoryEntity", cascade = CascadeType.ALL)

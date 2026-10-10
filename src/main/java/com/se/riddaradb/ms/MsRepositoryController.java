@@ -1,5 +1,6 @@
 package com.se.riddaradb.ms;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -25,12 +26,12 @@ public class MsRepositoryController {
     }
 
     @PostMapping("postmsrepository")
-    MsRepositoryDto postMsEntry(@RequestBody MsRepositoryDto msRepositoryDto){
+    MsRepositoryDto postMsEntry(@RequestBody @Valid MsRepositoryDto msRepositoryDto){
         return msRepositoryService.saveMsRepository(msRepositoryDto);
     }
 
     @PutMapping("putmsrepository")
-    MsRepositoryDto putMsEntry(@RequestBody MsRepositoryDto msRepositoryDto){
+    MsRepositoryDto putMsEntry(@RequestBody @Valid MsRepositoryDto msRepositoryDto){
         return msRepositoryService.updateMsRepository(msRepositoryDto);
     }
 

@@ -1,5 +1,6 @@
 package com.se.riddaradb.motif;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collection;
@@ -24,7 +25,6 @@ public class MotifController {
     MotifDto getMotifEntryById(@PathVariable int id){
         return motifService.getMotifEntryById(id);
     }
-
 
     @GetMapping("getmotifsbyids")
     Collection<MotifDto> getMotifsByIds(@RequestParam(value="id") Integer[] ids){
@@ -52,12 +52,12 @@ public class MotifController {
     }
 
     @PostMapping("postmotif")
-    MotifDto postMotifEntry(@RequestBody MotifDto motifDto){
+    MotifDto postMotifEntry(@RequestBody @Valid MotifDto motifDto){
         return motifService.saveMotifEntry(motifDto);
     }
 
     @PutMapping("putmotif")
-    MotifDto putMotifEntry(@RequestBody MotifDto motifDto){
+    MotifDto putMotifEntry(@RequestBody @Valid MotifDto motifDto){
         return motifService.updateMotifEntry(motifDto);
     }
 

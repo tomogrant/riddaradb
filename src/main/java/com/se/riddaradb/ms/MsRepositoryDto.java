@@ -1,12 +1,17 @@
 package com.se.riddaradb.ms;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Set;
 
 public class MsRepositoryDto {
 
     private Integer id;
+    @NotBlank
     private String name;
+    @NotBlank
     private String city;
+    @NotBlank
     private String country;
     private Set<Integer> msIds;
 

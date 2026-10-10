@@ -1,11 +1,15 @@
 package com.se.riddaradb.ms;
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class MsDto {
         private Integer id;
         private String name;
+        @NotBlank
         private String shelfmark;
+        @NotBlank
         private String date;
         private String handritLink;
         private String fasnlLink;

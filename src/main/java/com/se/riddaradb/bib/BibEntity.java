@@ -24,8 +24,7 @@ public class BibEntity {
     private String editors;
 
     private String translators;
-
-    @NotBlank
+    
     private String title;
 
     private String url;

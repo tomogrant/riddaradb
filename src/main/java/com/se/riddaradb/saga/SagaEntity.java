@@ -18,6 +18,7 @@ public class SagaEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String title;
 
     @NotBlank

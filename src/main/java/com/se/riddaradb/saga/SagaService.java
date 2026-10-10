@@ -1,8 +1,10 @@
 package com.se.riddaradb.saga;
 
 import com.se.riddaradb.bib.BibRepository;
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.ms.MsRepository;
 import com.se.riddaradb.sagaversion.*;
+import jakarta.validation.Valid;
 import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -54,12 +56,8 @@ public class SagaService {
     }
 
     public SagaResponseDto getSagaById(int id){
-        if (sagaRepository.findById(id).isPresent()){
-            return sagaMapper.mapToResponseDto(sagaRepository.findById(id).get());
-        }
-        else {
-            return null;
-        }
+            return sagaMapper.mapToResponseDto(sagaRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Saga with ID " + id + " not found in DB")));
     }
 
     public Set<SagaTitleDto> getSagaTitles(){
@@ -71,9 +69,11 @@ public class SagaService {
 
     public SagaResponseDto updateSaga(SagaRequestDto sagaRequestDto){
 
-        SagaEntity sagaEntity = sagaRepository.findById(sagaRequestDto.getId()).orElseThrow();
+        SagaEntity sagaEntity = sagaRepository.findById(sagaRequestDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Saga not found in database"));
 
         sagaEntity.setTitle(sagaRequestDto.getTitle());
+        sagaEntity.setTranslatedTitle(sagaRequestDto.getTranslatedTitle());
         sagaEntity.setDescription(sagaRequestDto.getDescription());
         sagaEntity.setTranslated(sagaRequestDto.getTranslated());
 
@@ -86,7 +86,7 @@ public class SagaService {
         return sagaMapper.mapToResponseDto(sagaRepository.save(sagaEntity));
     }
 
-    public SagaResponseDto saveSaga(@NotNull SagaRequestDto sagaRequestDto){
+    public SagaResponseDto saveSaga(SagaRequestDto sagaRequestDto){
 
         SagaEntity sagaEntity = new SagaEntity(null, sagaRequestDto.getTitle(), sagaRequestDto.getTranslatedTitle(), sagaRequestDto.getDescription(), sagaRequestDto.getTranslated());
 
@@ -134,7 +134,7 @@ public class SagaService {
                         .stream()
                         .filter(entity -> Objects.equals(entity.getId(), sagaVersionDto.getId()))
                         .findFirst()
-                        .orElseThrow();
+                        .orElseThrow(() -> new ResourceNotFoundException("Saga version not found"));
 
                 sagaVersionEntity.setTitle(sagaVersionDto.getTitle());
                 sagaVersionEntity.setDescription(sagaVersionDto.getDescription());
@@ -184,7 +184,8 @@ public class SagaService {
         // this saga, remove them.
         sagaMsRepository.findBySagaEntityId(sagaRequestDto.getId()).forEach(sagaMs -> {
             if (!newSagaMsIds.contains(sagaMs.getMsEntity().getId())){
-                sagaEntity.removeMs(msRepository.findById(sagaMs.getMsEntity().getId()).orElseThrow());
+                sagaEntity.removeMs(msRepository.findById(sagaMs.getMsEntity().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("MS entity not found in database")));
             }
         });
     }

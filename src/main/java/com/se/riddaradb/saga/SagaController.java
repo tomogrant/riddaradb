@@ -33,7 +33,7 @@ public class SagaController {
     }
 
     @PutMapping("putsaga")
-    SagaResponseDto putSaga(@RequestBody SagaRequestDto sagaRequestDto){
+    SagaResponseDto putSaga(@RequestBody @Valid SagaRequestDto sagaRequestDto){
         return sagaService.updateSaga(sagaRequestDto);
     }
 

@@ -1,14 +1,21 @@
 package com.se.riddaradb.auth.user;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.Set;
 
 public class UserDto {
 
     private Integer id;
+    @NotBlank
     private String username;
+    @NotBlank
     private String email;
+    @NotBlank
     private String firstName;
+    @NotBlank
     private String lastNames;
+
     private String password;
 
     public UserDto() {

@@ -1,6 +1,7 @@
 package com.se.riddaradb.motif;
 
 import com.se.riddaradb.sagaversion.SagaVersionMotifDto;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -8,7 +9,9 @@ import java.util.Set;
 public class MotifDto {
 
     private Integer id;
+    @NotBlank
     private String motifCode;
+    @NotBlank
     private String motifName;
     private String description;
     private Integer parentId;

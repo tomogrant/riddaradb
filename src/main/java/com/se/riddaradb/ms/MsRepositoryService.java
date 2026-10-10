@@ -1,5 +1,6 @@
 package com.se.riddaradb.ms;
 
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,7 +30,8 @@ public class MsRepositoryService {
     }
 
     MsRepositoryDto getMsRepositoryById(int id){
-        return msRepositoryMapper.mapToDto(msRepositoryRepository.findById(id).orElseThrow());
+        return msRepositoryMapper.mapToDto(msRepositoryRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("MS repo not found in database")));
     }
 
     MsRepositoryDto saveMsRepository(MsRepositoryDto msRepositoryDto){
@@ -44,7 +46,8 @@ public class MsRepositoryService {
     }
 
     MsRepositoryDto updateMsRepository(MsRepositoryDto msRepositoryDto){
-        MsRepositoryEntity msRepositoryEntity = msRepositoryRepository.findById(msRepositoryDto.getId()).orElseThrow();
+        MsRepositoryEntity msRepositoryEntity = msRepositoryRepository.findById(msRepositoryDto.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("MS repo not found in database"));
 
         msRepositoryEntity.setName(msRepositoryDto.getName());
         msRepositoryEntity.setCity(msRepositoryDto.getCity());

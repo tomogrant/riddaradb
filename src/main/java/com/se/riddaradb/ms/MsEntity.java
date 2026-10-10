@@ -5,6 +5,7 @@ import com.se.riddaradb.saga.SagaMsEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import com.se.riddaradb.sagaversion.SagaVersionMotifEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,8 +20,10 @@ public class MsEntity {
 
     private String name;
 
+    @NotBlank
     private String shelfmark;
 
+    @NotBlank
     private String date;
 
     private String handritLink;

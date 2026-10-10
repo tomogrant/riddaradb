@@ -1,5 +1,6 @@
 package com.se.riddaradb.auth.user;
 
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -20,12 +21,12 @@ public class UserController {
     }
 
     @PostMapping("postuser")
-    public UserDto createUser(@RequestBody UserDto userDto){
+    public UserDto createUser(@RequestBody @Valid UserDto userDto){
         return userService.createUser(userDto);
     }
 
     @PutMapping("putuser")
-    public UserDto updateUser(@RequestBody UserDto userDto){
+    public UserDto updateUser(@RequestBody @Valid UserDto userDto){
         return userService.updateUser(userDto);
     }
 

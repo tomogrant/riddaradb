@@ -1,11 +1,14 @@
 package com.se.riddaradb.location;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.HashSet;
 import java.util.Set;
 
 public class LocationDto {
 
     int id;
+    @NotBlank
     String name;
     LocationEntity.Type type;
     Set<Integer> characterIds;

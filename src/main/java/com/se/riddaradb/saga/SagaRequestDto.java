@@ -2,6 +2,7 @@ package com.se.riddaradb.saga;
 
 import com.se.riddaradb.sagaversion.SagaVersionRequestDto;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -16,6 +17,7 @@ public class SagaRequestDto {
     private String translatedTitle;
     private String description;
     private Boolean translated;
+    @NotEmpty
     private Set<SagaVersionRequestDto> sagaVersions = new HashSet<>();
     private Set<Integer> bibIds = new HashSet<>();
     private Set<SagaMsDto> sagaMsDtos = new HashSet<>();
