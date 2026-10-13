@@ -74,6 +74,7 @@ public class SagaService {
 
         sagaEntity.setTitle(sagaRequestDto.getTitle());
         sagaEntity.setTranslatedTitle(sagaRequestDto.getTranslatedTitle());
+        sagaEntity.setPageAuthor(sagaRequestDto.getPageAuthor());
         sagaEntity.setDescription(sagaRequestDto.getDescription());
         sagaEntity.setTranslated(sagaRequestDto.getTranslated());
 
@@ -88,7 +89,7 @@ public class SagaService {
 
     public SagaResponseDto saveSaga(SagaRequestDto sagaRequestDto){
 
-        SagaEntity sagaEntity = new SagaEntity(null, sagaRequestDto.getTitle(), sagaRequestDto.getTranslatedTitle(), sagaRequestDto.getDescription(), sagaRequestDto.getTranslated());
+        SagaEntity sagaEntity = new SagaEntity(null, sagaRequestDto.getTitle(), sagaRequestDto.getTranslatedTitle(), sagaRequestDto.getPageAuthor(), sagaRequestDto.getDescription(), sagaRequestDto.getTranslated());
 
         // This is actually optimal for objects which are not created in the saga menu,
         // as you're just linking the saga to objects which already exist via ID. The only

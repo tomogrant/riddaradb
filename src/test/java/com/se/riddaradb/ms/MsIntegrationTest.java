@@ -176,7 +176,7 @@ public class MsIntegrationTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-        Set<MotifDto> result = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<>(){});
+        Set<MsDto> result = objectMapper.readValue(mvcResult.getResponse().getContentAsString(), new TypeReference<>(){});
 
         assertThat(result).isEmpty();
     }
@@ -248,7 +248,6 @@ public class MsIntegrationTest {
                 "GKS 2365 4to",
                 "1600",
                 "www.handrit.is",
-                "www.fasnl.net",
                 "Also known as Konungsbók"
         );
     }
@@ -258,6 +257,7 @@ public class MsIntegrationTest {
                 null,
                 "Title",
                 "Translated title",
+                "Page author",
                 "Description",
                 false);
     }

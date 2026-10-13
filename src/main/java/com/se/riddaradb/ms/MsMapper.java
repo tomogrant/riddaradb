@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 public class MsMapper {
 
     public MsDto mapToDto(MsEntity msEntity){
-        MsDto msDto = new MsDto(msEntity.getId(), msEntity.getName(), msEntity.getShelfmark(), msEntity.getDate(), msEntity.getHandritLink(), msEntity.getFasnlLink(), msEntity.getDescription());
+        MsDto msDto = new MsDto(msEntity.getId(), msEntity.getName(), msEntity.getShelfmark(), msEntity.getDate(), msEntity.getEntryLink(), msEntity.getDescription());
 
         //Set saga entries
         for (SagaMsEntity sagaMsEntity : msEntity.getSagaMsEntities()){

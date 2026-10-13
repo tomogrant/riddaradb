@@ -92,7 +92,7 @@ public class MotifService {
 
         MotifEntity motifEntity = new MotifEntity(null, motifDto.getMotifCode(), motifDto.getMotifName(), motifDto.getDescription());
 
-        for (MotifSagaVersionDto motifSagaDto : motifDto.getSagaMotifs()){
+        for (MotifSagaVersionDto motifSagaDto : motifDto.getMotifSagas()){
             System.out.println("There is a MotifSagaDto associated with this DTO, but is there a saga version in the DB?");
                 sagaVersionRepository.findById(motifSagaDto.getSagaVersionId()).ifPresent(sagaVersion -> {
                     System.out.println("Saga version found");
@@ -115,12 +115,12 @@ public class MotifService {
                 .collect(Collectors.toMap(sagaVersionMotifEntity -> sagaVersionMotifEntity.getSagaVersionEntity().getId(), Function.identity()));
 
         //IDs of sagas to be joined to this motif
-        Set<Integer> newSagaMotifIds = motifDto.getSagaMotifs()
+        Set<Integer> newSagaMotifIds = motifDto.getMotifSagas()
                 .stream()
                 .map(MotifSagaVersionDto::getSagaVersionId)
                 .collect(Collectors.toSet());
 
-        for (MotifSagaVersionDto motifSagaDto : motifDto.getSagaMotifs()){
+        for (MotifSagaVersionDto motifSagaDto : motifDto.getMotifSagas()){
             SagaVersionMotifEntity sagaMotifCurrent = currentSagaMotifs.get(motifSagaDto.getSagaVersionId());
 
             //Saga-motif exists already. Update.

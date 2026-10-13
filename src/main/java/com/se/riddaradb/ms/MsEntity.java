@@ -26,9 +26,7 @@ public class MsEntity {
     @NotBlank
     private String date;
 
-    private String handritLink;
-
-    private String fasnlLink;
+    private String entryLink;
 
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -43,13 +41,12 @@ public class MsEntity {
     public MsEntity() {
     }
 
-    public MsEntity(Integer id, String name, String shelfmark, String date, String handritLink, String fasnlLink, String description) {
+    public MsEntity(Integer id, String name, String shelfmark, String date, String entryLink, String description) {
         this.id = id;
         this.name = name;
         this.shelfmark = shelfmark;
         this.date = date;
-        this.handritLink = handritLink;
-        this.fasnlLink = fasnlLink;
+        this.entryLink = entryLink;
         this.description = description;
     }
 
@@ -85,20 +82,12 @@ public class MsEntity {
         this.date = date;
     }
 
-    public String getHandritLink() {
-        return handritLink;
+    public String getEntryLink() {
+        return entryLink;
     }
 
-    public void setHandritLink(String handritLink) {
-        this.handritLink = handritLink;
-    }
-
-    public String getFasnlLink() {
-        return fasnlLink;
-    }
-
-    public void setFasnlLink(String fasnlLink) {
-        this.fasnlLink = fasnlLink;
+    public void setEntryLink(String entryLink) {
+        this.entryLink = entryLink;
     }
 
     public String getDescription() {

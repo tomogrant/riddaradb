@@ -100,6 +100,7 @@ public class SagaIntegrationTest {
                 sagaResponseDto.getId(),
                 "New title",
                 "New translated title",
+                "Page author",
                 "New description",
                 false
         );
@@ -227,6 +228,7 @@ public class SagaIntegrationTest {
     private void checkSagaMsFields(SagaMsDto sagaMsDto, SagaMsDto sagaMsDtoResult){
         assertThat(sagaMsDtoResult.getMsId()).isNotNull();
         assertThat(sagaMsDtoResult.getFolioNumber()).isEqualTo(sagaMsDto.getFolioNumber());
+        assertThat(sagaMsDtoResult.getNote()).isEqualTo(sagaMsDto.getNote());
     }
 
     //Factory methods
@@ -235,6 +237,7 @@ public class SagaIntegrationTest {
                 null,
                 "Title",
                 "Translated title",
+                "Page author",
                 "Description",
                 false);
     }
@@ -276,7 +279,6 @@ public class SagaIntegrationTest {
                 "Shelfmark",
                 "1300",
                 "www.handrit.is",
-                "www.fasnl.net",
                 "Description");
     }
 

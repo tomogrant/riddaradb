@@ -24,6 +24,9 @@ public class SagaEntity {
     @NotBlank
     private String translatedTitle;
 
+    @NotBlank
+    private String pageAuthor;
+
     @Column(columnDefinition = "TEXT")
     private String description;
 
@@ -44,10 +47,11 @@ public class SagaEntity {
     public SagaEntity(){
     }
 
-    public SagaEntity(Integer id, String title, String translatedTitle, String description, Boolean translated) {
+    public SagaEntity(Integer id, String title, String translatedTitle, String pageAuthor, String description, Boolean translated) {
         this.id = id;
         this.title = title;
         this.translatedTitle = translatedTitle;
+        this.pageAuthor = pageAuthor;
         this.description = description;
         this.translated = translated;
     }
@@ -101,6 +105,14 @@ public class SagaEntity {
 
     public void setTranslatedTitle(String translatedTitle) {
         this.translatedTitle = translatedTitle;
+    }
+
+    public String getPageAuthor() {
+        return pageAuthor;
+    }
+
+    public void setPageAuthor(String pageAuthor) {
+        this.pageAuthor = pageAuthor;
     }
 
     public String getDescription() {

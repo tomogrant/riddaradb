@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collection;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -36,6 +35,10 @@ public class UserService {
                 .filter(user -> !user.getRoles().contains(Role.ADMINISTRATOR))
                 .map(userMapper::mapToDto)
                 .collect(Collectors.toSet());
+    }
+
+    public boolean adminExists(){
+        return userRepository.findByRoles(Role.ADMINISTRATOR).isPresent();
     }
 
     public UserDto createUser(UserDto userDto){
@@ -80,5 +83,9 @@ public class UserService {
                 .forEach(SessionInformation::expireNow);
 
         userRepository.deleteByUsername(username);
+    }
+
+    public void deleteAllContributors(){
+        userRepository.deleteAllByRolesNotContaining(Role.ADMINISTRATOR);
     }
 }

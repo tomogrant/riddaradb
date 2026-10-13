@@ -10,7 +10,7 @@ public class MotifMapper {
         MotifDto motifDto = new MotifDto(motifEntity.getId(), motifEntity.getMotifCode(), motifEntity.getMotifName(), motifEntity.getDescription(), !motifEntity.getChildren().isEmpty());
 
         for (SagaVersionMotifEntity sagaVersionMotifEntity : motifEntity.getSagaVersionMotifEntities()){
-            motifDto.getSagaMotifs().add(new MotifSagaVersionDto
+            motifDto.getMotifSagas().add(new MotifSagaVersionDto
                     (sagaVersionMotifEntity.getSagaVersionEntity().getId(),
                     sagaVersionMotifEntity.getPageChapterNumber(),
                     sagaVersionMotifEntity.getInBoberg()));

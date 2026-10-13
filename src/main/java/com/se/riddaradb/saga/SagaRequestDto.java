@@ -15,6 +15,8 @@ public class SagaRequestDto {
     private String title;
     @NotBlank
     private String translatedTitle;
+    @NotBlank
+    private String pageAuthor;
     private String description;
     private Boolean translated;
     @NotEmpty
@@ -22,10 +24,11 @@ public class SagaRequestDto {
     private Set<Integer> bibIds = new HashSet<>();
     private Set<SagaMsDto> sagaMsDtos = new HashSet<>();
 
-    public SagaRequestDto(Integer id, String title, String translatedTitle, String description, Boolean translated) {
+    public SagaRequestDto(Integer id, String title, String translatedTitle, String pageAuthor, String description, Boolean translated) {
         this.id = id;
         this.title = title;
         this.translatedTitle = translatedTitle;
+        this.pageAuthor = pageAuthor;
         this.description = description;
         this.translated = translated;
     }
@@ -56,6 +59,14 @@ public class SagaRequestDto {
 
     public void setTranslatedTitle(String translatedTitle) {
         this.translatedTitle = translatedTitle;
+    }
+
+    public String getPageAuthor() {
+        return pageAuthor;
+    }
+
+    public void setPageAuthor(String pageAuthor) {
+        this.pageAuthor = pageAuthor;
     }
 
     public String getDescription() {

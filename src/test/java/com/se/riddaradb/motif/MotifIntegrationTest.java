@@ -64,7 +64,7 @@ public class MotifIntegrationTest {
         assertThat(result.getMotifName()).isEqualTo(createMotifDto().getMotifName());
         assertThat(result.getDescription()).isEqualTo(createMotifDto().getDescription());
         assertThat(result.getHasChildren()).isEqualTo(createMotifDto().getHasChildren());
-        assertThat(result.getSagaMotifs())
+        assertThat(result.getMotifSagas())
                 .singleElement()
                 .satisfies(element -> assertThat(element.getPageChapterNumber()).isEqualTo(createMotifSagaVersionDto().getPageChapterNumber()));
 
@@ -79,10 +79,10 @@ public class MotifIntegrationTest {
         motifDto.setMotifName("New motif name");
         motifDto.setDescription("New description");
 
-        MotifSagaVersionDto motifSagaVersionDto = motifDto.getSagaMotifs().stream().findFirst().orElseThrow();
+        MotifSagaVersionDto motifSagaVersionDto = motifDto.getMotifSagas().stream().findFirst().orElseThrow();
         motifSagaVersionDto.setPageChapterNumber("New page chapter number");
 
-        motifDto.setSagaMotifs(Set.of(motifSagaVersionDto));
+        motifDto.setMotifSagas(Set.of(motifSagaVersionDto));
 
         MvcResult mvcResult = mockMvc.perform(put("/motifs/putmotif")
                         .with(csrf())
@@ -99,7 +99,7 @@ public class MotifIntegrationTest {
         assertThat(result.getMotifName()).isEqualTo(motifDto.getMotifName());
         assertThat(result.getDescription()).isEqualTo(motifDto.getDescription());
         assertThat(result.getHasChildren()).isEqualTo(motifDto.getHasChildren());
-        assertThat(result.getSagaMotifs())
+        assertThat(result.getMotifSagas())
                 .singleElement()
                 .satisfies(element -> assertThat(element.getPageChapterNumber()).isEqualTo(motifSagaVersionDto.getPageChapterNumber()));
 
@@ -161,7 +161,7 @@ public class MotifIntegrationTest {
                 .orElseThrow()
                 .getId());
 
-        motifDto.setSagaMotifs(Set.of(motifSagaVersionDto));
+        motifDto.setMotifSagas(Set.of(motifSagaVersionDto));
 
         MvcResult mvcResult = mockMvc.perform(post("/motifs/postmotif")
                         .with(csrf())
@@ -189,6 +189,7 @@ public class MotifIntegrationTest {
                 null,
                 "Title",
                 "Translated title",
+                "Page author",
                 "Description",
                 false);
     }
