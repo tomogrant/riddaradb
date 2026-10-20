@@ -28,11 +28,11 @@ public class CharacterEntity {
 
     String realWorldRef;
 
-    @ManyToMany(mappedBy = "characterEntity")
-    Set<LocationEntity> locationEntity = new HashSet<>();
+    @ManyToMany(mappedBy = "characterEntities")
+    Set<LocationEntity> locationEntities = new HashSet<>();
 
-    @ManyToMany(mappedBy = "characterEntity")
-    Set<SagaVersionEntity> sagaVersionEntity = new HashSet<>();
+    @ManyToMany(mappedBy = "characterEntities")
+    Set<SagaVersionEntity> sagaVersionEntities = new HashSet<>();
 
     protected CharacterEntity() {
     }
@@ -76,20 +76,20 @@ public class CharacterEntity {
         this.realWorldRef = realWorldRef;
     }
 
-    public Set<LocationEntity> getLocationEntity() {
-        return locationEntity;
+    public Set<LocationEntity> getLocationEntities() {
+        return locationEntities;
     }
 
-    public void setLocationEntity(Set<LocationEntity> locationEntity) {
-        this.locationEntity = locationEntity;
+    public void setLocationEntities(Set<LocationEntity> locationEntities) {
+        this.locationEntities = locationEntities;
     }
 
-    public Set<SagaVersionEntity> getSagaVersionEntity() {
-        return sagaVersionEntity;
+    public Set<SagaVersionEntity> getSagaVersionEntities() {
+        return sagaVersionEntities;
     }
 
-    public void setSagaVersionEntity(Set<SagaVersionEntity> sagaVersionEntity) {
-        this.sagaVersionEntity = sagaVersionEntity;
+    public void setSagaVersionEntities(Set<SagaVersionEntity> sagaVersionEntities) {
+        this.sagaVersionEntities = sagaVersionEntities;
     }
 
 

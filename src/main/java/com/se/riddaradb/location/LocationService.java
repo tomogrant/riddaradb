@@ -1,14 +1,11 @@
 package com.se.riddaradb.location;
 
-import com.se.riddaradb.character.CharacterEntity;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import com.se.riddaradb.character.CharacterRepository;
 import com.se.riddaradb.sagaversion.SagaVersionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 
 @Service
 public class LocationService {
@@ -43,8 +40,8 @@ public class LocationService {
 
     public LocationDto saveLocationEntry(LocationDto locationDto){
         LocationEntity locationEntity = locationMapper.mapFromDto(locationDto);
-        locationEntity.setSagaVersionEntity(new HashSet<>(sagaVersionRepository.findAllById(locationDto.getSagaVersionIds())));
-        locationEntity.setCharacterEntity(new HashSet<>(characterRepository.findAllById(locationDto.getCharacterIds())));
+        locationEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(locationDto.getSagaVersionIds())));
+        locationEntity.setCharacterEntities(new HashSet<>(characterRepository.findAllById(locationDto.getCharacterIds())));
         return locationMapper.mapToDto(locationRepository.save(locationEntity));
     }
 

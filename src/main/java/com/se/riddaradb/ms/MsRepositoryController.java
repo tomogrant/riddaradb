@@ -3,6 +3,7 @@ package com.se.riddaradb.ms;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 
 @RestController
@@ -36,7 +37,7 @@ public class MsRepositoryController {
     }
 
     @DeleteMapping("deletemsrepository/{id}")
-    void deleteMsEntry(@PathVariable int id){
+    void deleteMsEntry(@PathVariable int id) throws AccessDeniedException {
         msRepositoryService.deleteMsRepositoryById(id);
     }
 }

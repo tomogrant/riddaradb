@@ -1,5 +1,8 @@
 package com.se.riddaradb.sagaversion;
 
+import com.se.riddaradb.character.CharacterDto;
+import com.se.riddaradb.location.LocationDto;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -11,8 +14,8 @@ public class SagaVersionResponseDto {
     private SagaVersionEntity.SagaDate date;
     private Integer sagaId;
     private Set<SagaVersionMotifDto> sagaMotifs;
-    private Set<Integer> characterIds;
-    private Set<Integer> locationIds;
+    private Set<CharacterDto> characters;
+    private Set<LocationDto> locations;
 
     public SagaVersionResponseDto(Integer id, String title, String description, SagaVersionEntity.SagaDate date) {
         this.id = id;
@@ -20,8 +23,8 @@ public class SagaVersionResponseDto {
         this.description = description;
         this.date = date;
         sagaMotifs = new HashSet<>();
-        characterIds = new HashSet<>();
-        locationIds = new HashSet<>();
+        characters = new HashSet<>();
+        locations = new HashSet<>();
     }
 
     public Integer getId() {
@@ -72,19 +75,19 @@ public class SagaVersionResponseDto {
         this.sagaMotifs = sagaMotifs;
     }
 
-    public Set<Integer> getCharacterIds() {
-        return characterIds;
+    public Set<CharacterDto> getCharacters() {
+        return characters;
     }
 
-    public void setCharacterIds(Set<Integer> characterIds) {
-        this.characterIds = characterIds;
+    public void setCharacters(Set<CharacterDto> characters) {
+        this.characters = characters;
     }
 
-    public Set<Integer> getLocationIds() {
-        return locationIds;
+    public Set<LocationDto> getLocations() {
+        return locations;
     }
 
-    public void setLocationIds(Set<Integer> locationIds) {
-        this.locationIds = locationIds;
+    public void setLocations(Set<LocationDto> locations) {
+        this.locations = locations;
     }
 }

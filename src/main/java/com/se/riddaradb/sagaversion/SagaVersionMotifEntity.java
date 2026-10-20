@@ -32,6 +32,7 @@ public class SagaVersionMotifEntity {
         this.sagaVersionEntity = sagaVersionEntity;
         this.motifEntity = motifEntity;
         this.pageChapterNumber = pageChapterNumber;
+        this.inBoberg = inBoberg;
     }
 
     public SagaVersionMotifKey getId() {

@@ -12,12 +12,12 @@ public class LocationMapper {
     public LocationDto mapToDto(LocationEntity locationEntity){
         LocationDto locationDto = new LocationDto(locationEntity.getId(), locationEntity.getName(), locationEntity.getType());
 
-        locationDto.setCharacterIds(locationEntity.getCharacterEntity()
+        locationDto.setCharacterIds(locationEntity.getCharacterEntities()
                 .stream()
                 .map(CharacterEntity::getId)
                 .collect(Collectors.toSet()));
 
-        locationDto.setSagaVersionIds(locationEntity.getSagaVersionEntity()
+        locationDto.setSagaVersionIds(locationEntity.getSagaVersionEntities()
                 .stream()
                 .map(SagaVersionEntity::getId)
                 .collect(Collectors.toSet()));

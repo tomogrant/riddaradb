@@ -12,12 +12,12 @@ public class CharacterMapper {
     public CharacterDto mapToDto(CharacterEntity characterEntity){
         CharacterDto characterDto = new CharacterDto(characterEntity.getId(), characterEntity.getName(), characterEntity.getSpecies(), characterEntity.getRealWorldRef());
 
-        characterDto.setLocationIds(characterEntity.getLocationEntity()
+        characterDto.setLocationIds(characterEntity.getLocationEntities()
                 .stream()
                 .map(LocationEntity::getId)
                 .collect(Collectors.toSet()));
 
-        characterDto.setSagaVersionIds(characterEntity.getSagaVersionEntity()
+        characterDto.setSagaVersionIds(characterEntity.getSagaVersionEntities()
                 .stream()
                 .map(SagaVersionEntity::getId)
                 .collect(Collectors.toSet()));

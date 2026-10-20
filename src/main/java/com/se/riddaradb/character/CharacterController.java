@@ -30,7 +30,7 @@ public class CharacterController {
 
     @PutMapping("/putcharacter")
     CharacterDto putCharacterEntry(@RequestBody @Valid CharacterDto characterDto){
-        return characterService.saveCharacterEntry(characterDto);
+        return characterService.updateCharacterEntry(characterDto);
     }
 
     @DeleteMapping("/deletecharacter/{id}")

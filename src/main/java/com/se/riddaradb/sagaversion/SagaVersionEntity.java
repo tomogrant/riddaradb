@@ -48,13 +48,13 @@ public class SagaVersionEntity {
     @JoinTable(name = "sagaversion-character",
             joinColumns = @JoinColumn(name = "sagaversion_id"),
             inverseJoinColumns = @JoinColumn(name = "character_id"))
-    private Set<CharacterEntity> characterEntity = new HashSet<>();
+    private Set<CharacterEntity> characterEntities = new HashSet<>();
 
     @ManyToMany()
     @JoinTable(name = "sagaversion-location",
             joinColumns = @JoinColumn(name = "sagaversion_id"),
             inverseJoinColumns = @JoinColumn(name = "location_id"))
-    private Set<LocationEntity> locationEntity = new HashSet<>();
+    private Set<LocationEntity> locationEntities = new HashSet<>();
     
 
     public SagaVersionEntity() {
@@ -127,19 +127,19 @@ public class SagaVersionEntity {
         this.sagaVersionMotifEntities = sagaVersionMotifEntities;
     }
 
-    public Set<CharacterEntity> getCharacterEntity() {
-        return characterEntity;
+    public Set<CharacterEntity> getCharacterEntities() {
+        return characterEntities;
     }
 
-    public void setCharacterEntity(Set<CharacterEntity> characterEntity) {
-        this.characterEntity = characterEntity;
+    public void setCharacterEntities(Set<CharacterEntity> characterEntities) {
+        this.characterEntities = characterEntities;
     }
 
-    public Set<LocationEntity> getLocationEntity() {
-        return locationEntity;
+    public Set<LocationEntity> getLocationEntities() {
+        return locationEntities;
     }
 
-    public void setLocationEntity(Set<LocationEntity> locationEntity) {
-        this.locationEntity = locationEntity;
+    public void setLocationEntities(Set<LocationEntity> locationEntities) {
+        this.locationEntities = locationEntities;
     }
 }

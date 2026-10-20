@@ -1,12 +1,22 @@
 package com.se.riddaradb.sagaversion;
 
 import com.se.riddaradb.character.CharacterEntity;
+import com.se.riddaradb.character.CharacterMapper;
 import com.se.riddaradb.location.LocationEntity;
+import com.se.riddaradb.location.LocationMapper;
 import org.springframework.stereotype.Service;
 import java.util.stream.Collectors;
 
 @Service
 public class SagaVersionMapper {
+
+    final CharacterMapper characterMapper;
+    final LocationMapper locationMapper;
+
+    public SagaVersionMapper(CharacterMapper characterMapper, LocationMapper locationMapper){
+        this.characterMapper = characterMapper;
+        this.locationMapper = locationMapper;
+    }
 
     //Consumes DB entity and produces response for frontend
     public SagaVersionResponseDto mapToDto(SagaVersionEntity sagaVersionEntity){
@@ -24,14 +34,14 @@ public class SagaVersionMapper {
                             sagaVersionMotifEntity.getInBoberg()));
         }
 
-        sagaVersionResponseDto.setCharacterIds(sagaVersionEntity.getCharacterEntity()
+        sagaVersionResponseDto.setCharacters(sagaVersionEntity.getCharacterEntities()
                 .stream()
-                .map(CharacterEntity::getId)
+                .map(characterMapper::mapToDto)
                 .collect(Collectors.toSet()));
 
-        sagaVersionResponseDto.setLocationIds(sagaVersionEntity.getLocationEntity()
+        sagaVersionResponseDto.setLocations(sagaVersionEntity.getLocationEntities()
                 .stream()
-                .map(LocationEntity::getId)
+                .map(locationMapper::mapToDto)
                 .collect(Collectors.toSet()));
 
         return sagaVersionResponseDto;

@@ -3,6 +3,7 @@ package com.se.riddaradb.motif;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Collection;
 import java.util.Set;
 
@@ -62,7 +63,7 @@ public class MotifController {
     }
 
     @DeleteMapping("deletemotif/{id}")
-    void deleteMotifEntry(@PathVariable int id){
+    void deleteMotifEntry(@PathVariable int id) throws AccessDeniedException {
         motifService.deleteMotifEntryById(id);
     }
 }

@@ -10,6 +10,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.nio.file.AccessDeniedException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,18 @@ public class GlobalExceptionHandler {
 
         problemDetail.setTitle("Entity not found");
         problemDetail.setDetail("The requested entity could not be found in the database");
+        problemDetail.setProperty("error", ex.getMessage());
+
+        return problemDetail;
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail handleAccessDeniedException(AccessDeniedException ex){
+
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.FORBIDDEN);
+
+        problemDetail.setTitle("Unauthorised request");
+        problemDetail.setDetail("The current user is unauthorised to make this request");
         problemDetail.setProperty("error", ex.getMessage());
 
         return problemDetail;

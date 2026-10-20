@@ -111,32 +111,26 @@ public class SecurityConfig {
 
                         //Bibliography entries
                         .requestMatchers(HttpMethod.GET, bibPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, bibPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(bibPattern).authenticated()
 
                         //Motifs
                         .requestMatchers(HttpMethod.GET, motifPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, motifPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(motifPattern).authenticated()
 
                         //Manuscripts
                         .requestMatchers(HttpMethod.GET, msPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, msPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(msPattern).authenticated()
 
                         //Manuscript repositories
                         .requestMatchers(HttpMethod.GET, msRepoPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, msRepoPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(msRepoPattern).authenticated()
 
                         //Characters
                         .requestMatchers(HttpMethod.GET, characterPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, characterPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(characterPattern).authenticated()
 
                         //Locations
                         .requestMatchers(HttpMethod.GET, locationPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, locationPattern).hasRole(Role.ADMINISTRATOR.name())
                         .requestMatchers(locationPattern).authenticated()
                 )
 

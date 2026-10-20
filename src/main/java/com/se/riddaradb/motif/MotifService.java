@@ -2,9 +2,12 @@ package com.se.riddaradb.motif;
 
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.sagaversion.*;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.nio.file.AccessDeniedException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -93,9 +96,7 @@ public class MotifService {
         MotifEntity motifEntity = new MotifEntity(null, motifDto.getMotifCode(), motifDto.getMotifName(), motifDto.getDescription());
 
         for (MotifSagaVersionDto motifSagaDto : motifDto.getMotifSagas()){
-            System.out.println("There is a MotifSagaDto associated with this DTO, but is there a saga version in the DB?");
                 sagaVersionRepository.findById(motifSagaDto.getSagaVersionId()).ifPresent(sagaVersion -> {
-                    System.out.println("Saga version found");
                     sagaVersion.addMotif(motifEntity, motifSagaDto.getPageChapterNumber(), motifSagaDto.getInBoberg());
                 });
         }
@@ -145,20 +146,34 @@ public class MotifService {
         });
     }
 
-    public void deleteMotifEntryById(int id){
+    public void deleteMotifEntryById(int id) throws AccessDeniedException {
+
+        boolean isAdmin = Objects.requireNonNull(SecurityContextHolder
+                        .getContext()
+                        .getAuthentication())
+                .getAuthorities()
+                .stream()
+                .anyMatch(auth ->
+                        Objects.equals(auth.getAuthority(), "ROLE_ADMINISTRATOR"));
 
         MotifEntity motifEntity = motifRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Motif entity not found in database"));
 
-        if (motifEntity.getParent() != null){
-            MotifEntity motifParent = motifRepository.findById(motifEntity.getParent().getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Motif parent not found in database"));
-            motifParent.getChildren().removeIf(child -> child.getId() == id);
+        //Admins can delete all motifs. Otherwise, the motif can only be deleted if it lacks children.
+        if (isAdmin || motifEntity.getChildren().isEmpty()) {
+            if (motifEntity.getParent() != null){
+                MotifEntity motifParent = motifRepository.findById(motifEntity.getParent().getId())
+                        .orElseThrow(() -> new ResourceNotFoundException("Motif parent not found in database"));
+                motifParent.getChildren().removeIf(child -> child.getId() == id);
+            }
+
+            removeChildren(id);
+
+            motifRepository.deleteById(id);
         }
-
-        removeChildren(id);
-
-        motifRepository.deleteById(id);
+        else{
+            throw(new AccessDeniedException("Unathorised for motif deletion request"));
+        }
     }
 
     public void deleteAll(){

@@ -1,5 +1,6 @@
 package com.se.riddaradb.character;
 
+import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.location.LocationRepository;
 import com.se.riddaradb.sagaversion.SagaVersionRepository;
 import org.springframework.stereotype.Service;
@@ -40,13 +41,24 @@ public class CharacterService {
 
     public CharacterDto saveCharacterEntry(CharacterDto characterDto){
         CharacterEntity characterEntity = characterMapper.mapFromDto(characterDto);
-        characterEntity.setSagaVersionEntity(new HashSet<>(sagaVersionRepository.findAllById(characterDto.getSagaVersionIds())));
-        characterEntity.setLocationEntity(new HashSet<>(locationRepository.findAllById(characterDto.getLocationIds())));
+        characterEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(characterDto.getSagaVersionIds())));
+        characterEntity.setLocationEntities(new HashSet<>(locationRepository.findAllById(characterDto.getLocationIds())));
+        return characterMapper.mapToDto(characterRepository.save(characterEntity));
+    }
+
+    public CharacterDto updateCharacterEntry(CharacterDto characterDto){
+        CharacterEntity characterEntity = characterRepository.findById(characterDto.id).orElseThrow(()
+                -> new ResourceNotFoundException("Character entry not found in DB"));
+
+        characterEntity.setId(characterDto.getId());
+        characterEntity.setName(characterDto.getName());
+        characterEntity.setLocationEntities(new HashSet<>(locationRepository.findAllById(characterDto.getLocationIds())));
+        characterEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(characterDto.getSagaVersionIds())));
+
         return characterMapper.mapToDto(characterRepository.save(characterEntity));
     }
 
     public void deleteCharacterEntryById(int id) {
-
         locationRepository.deleteById(id);
     }
 }

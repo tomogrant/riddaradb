@@ -10,22 +10,16 @@ public class SagaVersionRequestDto {
     private String description;
     private SagaVersionEntity.SagaDate date;
     private Integer sagaId;
-    private Set<Integer> motifIds;
-    private Set<Integer> personIds;
-    private Set<Integer> placeIds;
-    private Set<Integer> objectIds;
-    private Set<Integer> msIds;
+    private Set<Integer> characterIds;
+    private Set<Integer> locationIds;
 
     public SagaVersionRequestDto(Integer id, String title, String description, SagaVersionEntity.SagaDate date) {
         this.id = id;
         this.title = title;
         this.description = description;
         this.date = date;
-        motifIds = new HashSet<>();
-        personIds = new HashSet<>();
-        placeIds = new HashSet<>();
-        objectIds = new HashSet<>();
-        msIds = new HashSet<>();
+        characterIds = new HashSet<>();
+        locationIds = new HashSet<>();
     }
 
     public SagaVersionRequestDto() {
@@ -72,43 +66,19 @@ public class SagaVersionRequestDto {
         this.sagaId = sagaId;
     }
 
-    public Set<Integer> getMotifIds() {
-        return motifIds;
+    public Set<Integer> getCharacterIds() {
+        return characterIds;
     }
 
-    public void setMotifIds(Set<Integer> motifIds) {
-        this.motifIds = motifIds;
+    public void setCharacterIds(Set<Integer> characterIds) {
+        this.characterIds = characterIds;
     }
 
-    public Set<Integer> getPersonIds() {
-        return personIds;
+    public Set<Integer> getLocationIds() {
+        return locationIds;
     }
 
-    public void setPersonIds(Set<Integer> personIds) {
-        this.personIds = personIds;
-    }
-
-    public Set<Integer> getPlaceIds() {
-        return placeIds;
-    }
-
-    public void setPlaceIds(Set<Integer> placeIds) {
-        this.placeIds = placeIds;
-    }
-
-    public Set<Integer> getObjectIds() {
-        return objectIds;
-    }
-
-    public void setObjectIds(Set<Integer> objectIds) {
-        this.objectIds = objectIds;
-    }
-
-    public Set<Integer> getMsIds() {
-        return msIds;
-    }
-
-    public void setMsIds(Set<Integer> msIds) {
-        this.msIds = msIds;
+    public void setLocationIds(Set<Integer> locationIds) {
+        this.locationIds = locationIds;
     }
 }
