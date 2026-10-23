@@ -3,6 +3,7 @@ package com.se.riddaradb.auth.security;
 import com.se.riddaradb.auth.user.Role;
 import com.se.riddaradb.auth.user.UserEntity;
 import com.se.riddaradb.auth.user.UserRepository;
+import com.se.riddaradb.motif.boberg.MotifImporter;
 import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
@@ -24,7 +25,7 @@ public class AdminInitialiser implements ApplicationRunner {
     @Value("${app.admin.password}")
     private String password;
 
-    public AdminInitialiser(UserRepository userRepository, PasswordEncoder passwordEncoder){
+    public AdminInitialiser(UserRepository userRepository, PasswordEncoder passwordEncoder, MotifImporter motifImporter){
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
     }

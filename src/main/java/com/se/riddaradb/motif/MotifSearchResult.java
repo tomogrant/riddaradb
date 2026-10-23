@@ -1,12 +1,13 @@
 package com.se.riddaradb.motif;
 
+import java.util.List;
 import java.util.Set;
 
 public class MotifSearchResult {
     private Integer searchResultId;
-    private Set<Integer> searchResultPath;
+    private List<Integer> searchResultPath;
 
-    public MotifSearchResult(Integer searchResultId, Set<Integer> searchResultPath) {
+    public MotifSearchResult(Integer searchResultId, List<Integer> searchResultPath) {
         this.searchResultId = searchResultId;
         this.searchResultPath = searchResultPath;
     }
@@ -19,11 +20,11 @@ public class MotifSearchResult {
         this.searchResultId = searchResultId;
     }
 
-    public Set<Integer> getSearchResultPath() {
+    public List<Integer> getSearchResultPath() {
         return searchResultPath;
     }
 
-    public void setSearchResultPath(Set<Integer> searchResultPath) {
+    public void setSearchResultPath(List<Integer> searchResultPath) {
         this.searchResultPath = searchResultPath;
     }
 }

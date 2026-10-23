@@ -1,7 +1,9 @@
 package com.se.riddaradb.motif;
 
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
+import com.se.riddaradb.exceptions.TooManyResultsException;
 import com.se.riddaradb.sagaversion.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,9 @@ public class MotifService {
     final SagaVersionRepository sagaVersionRepository;
     final SagaVersionMotifRepository sagaVersionMotifRepository;
     final MotifMapper motifMapper;
+
+    @Value("${app.motifs.max-search-results:200}")
+    private Integer maxSearchResults;
 
     public MotifService(MotifRepository motifRepository, SagaVersionRepository sagaVersionRepository, SagaVersionMotifRepository sagaVersionMotifRepository, MotifMapper motifMapper) {
         this.motifRepository = motifRepository;
@@ -207,6 +212,10 @@ public class MotifService {
             });
         });
 
+        if (motifIds.size() > maxSearchResults){
+            throw new TooManyResultsException("Too many results. Results received: " + motifIds.size());
+        }
+
         for (int motifId : motifIds){
             searchResults.add(new MotifSearchResult(motifId, buildPath(motifId)));
         }
@@ -221,6 +230,10 @@ public class MotifService {
         motifRepository.findByMotifCodeIgnoreCase(searchTerm).forEach(motif
                 -> motifIds.add(motif.getId()));
 
+        if (motifIds.size() > maxSearchResults){
+            throw new TooManyResultsException("Too many results. Results received: " + motifIds.size());
+        }
+
         for (int motifId : motifIds){
             searchResults.add(new MotifSearchResult(motifId, buildPath(motifId)));
         }
@@ -228,9 +241,9 @@ public class MotifService {
         return searchResults;
     }
 
-    Set<Integer> buildPath(int motifId){
+    List<Integer> buildPath(int motifId){
         int localMotifId = motifId;
-        Set<Integer> path = new HashSet<>();
+        List<Integer> path = new ArrayList<>();
         boolean hasParent = true;
 
         while (hasParent){
@@ -247,6 +260,6 @@ public class MotifService {
             }
         }
 
-        return path;
+        return path.reversed();
     }
 }

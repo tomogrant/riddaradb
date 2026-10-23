@@ -18,6 +18,7 @@ public class MotifEntity {
     @NotBlank
     private String motifCode;
 
+    @Column(columnDefinition = "TEXT")
     @NotBlank
     private String motifName;
 

@@ -64,4 +64,16 @@ public class GlobalExceptionHandler {
 
         return problemDetail;
     }
+
+    @ExceptionHandler(TooManyResultsException.class)
+    public ProblemDetail handleTooManyResults(TooManyResultsException ex){
+
+        ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+
+        problemDetail.setTitle("Too many results");
+        problemDetail.setDetail("Results exceed 200");
+        problemDetail.setProperty("error", ex.getMessage());
+
+        return problemDetail;
+    }
 }

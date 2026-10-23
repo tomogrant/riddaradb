@@ -19,6 +19,16 @@ app:
   admin:
     username: admin
     password: password
+  site-locked: false
+  motifs:
+    max-search-results: 200
+
+server:
+  servlet:
+    session:
+      timeout: 14d
+      cookie:
+        max-age: 14d
 
 logging:
   level:

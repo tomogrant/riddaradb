@@ -2,6 +2,7 @@ package com.se.riddaradb.auth.security;
 
 import com.se.riddaradb.auth.user.Role;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -27,6 +28,8 @@ import java.util.List;
 @EnableMethodSecurity
 public class SecurityConfig {
 
+    @Value("${app.site-locked:true}")
+    private boolean locked;
 
     @Bean
     public AuthenticationManager authenticationManager
@@ -84,55 +87,108 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
 
                 //Generate CSRF cookie for Single Page Application
-                .csrf(CsrfConfigurer::spa)
+                .csrf(CsrfConfigurer::spa);
 
 //                .csrf(AbstractHttpConfigurer::disable)
-                .authorizeHttpRequests(auth -> auth
+                httpSecurity.authorizeHttpRequests(auth ->
+                        {
+                            auth.requestMatchers("/error").permitAll();
 
-                        .requestMatchers("/error").permitAll()
+                            auth.requestMatchers("/config/getconfig").permitAll();
 
-                        //Authentication; me and log out only if authenticated; anyone can log in and get the CSRF
-                        .requestMatchers("/auth/me", "/auth/logout").authenticated()
-                        .requestMatchers("/auth/csrf").permitAll()
-                        .requestMatchers("/auth/login").permitAll()
+                            //Authentication
+                            //--------------
+                            auth.requestMatchers("/auth/me", "/auth/logout").authenticated()
+                                    .requestMatchers("/auth/csrf").permitAll()
+                                    .requestMatchers("/auth/login").permitAll();
 
-                        //Admin actions
-                        .requestMatchers(adminPattern).hasRole(Role.ADMINISTRATOR.name())
+                            //Admin actions
+                            //-------------
+                            auth.requestMatchers(adminPattern).hasRole(Role.ADMINISTRATOR.name());
 
-                        //Sagas
-                        .requestMatchers(HttpMethod.GET, sagaPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, sagaPattern).hasRole(Role.ADMINISTRATOR.name())
-                        .requestMatchers(sagaPattern).authenticated()
+                            //Sagas
+                            //-----
+                            if (locked){
+                                auth.requestMatchers(HttpMethod.GET, sagaPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, sagaPattern).permitAll();
+                            }
 
-                        //Saga versions
-                        .requestMatchers(HttpMethod.GET, sagaVersionPattern).permitAll()
-                        .requestMatchers(HttpMethod.DELETE, sagaVersionPattern).hasRole(Role.ADMINISTRATOR.name())
-                        .requestMatchers(sagaVersionPattern).authenticated()
+                            auth.requestMatchers(HttpMethod.DELETE, sagaPattern).hasRole(Role.ADMINISTRATOR.name())
+                                    .requestMatchers(sagaPattern).authenticated();
 
-                        //Bibliography entries
-                        .requestMatchers(HttpMethod.GET, bibPattern).permitAll()
-                        .requestMatchers(bibPattern).authenticated()
+                            //Saga versions
+                            //-------------
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, sagaVersionPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, sagaVersionPattern).permitAll();
+                            }
+                            auth.requestMatchers(HttpMethod.DELETE, sagaVersionPattern).hasRole(Role.ADMINISTRATOR.name())
+                                    .requestMatchers(sagaVersionPattern).authenticated();
 
-                        //Motifs
-                        .requestMatchers(HttpMethod.GET, motifPattern).permitAll()
-                        .requestMatchers(motifPattern).authenticated()
+                            //Bibliography entries
+                            //--------------------
+                            if (locked){
+                                auth.requestMatchers(HttpMethod.GET, bibPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, bibPattern).permitAll();
+                            }
+                            auth.requestMatchers(bibPattern).authenticated();
 
-                        //Manuscripts
-                        .requestMatchers(HttpMethod.GET, msPattern).permitAll()
-                        .requestMatchers(msPattern).authenticated()
+                            //Motifs
+                            //------
+                            if (locked){
+                                auth.requestMatchers(HttpMethod.GET, motifPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, motifPattern).permitAll();
+                            }
+                            auth.requestMatchers(motifPattern).authenticated();
 
-                        //Manuscript repositories
-                        .requestMatchers(HttpMethod.GET, msRepoPattern).permitAll()
-                        .requestMatchers(msRepoPattern).authenticated()
+                            //Manuscripts
+                            //-----------
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, msPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, msPattern).permitAll();
+                            }
+                            auth.requestMatchers(msPattern).authenticated();
 
-                        //Characters
-                        .requestMatchers(HttpMethod.GET, characterPattern).permitAll()
-                        .requestMatchers(characterPattern).authenticated()
+                            //Manuscript repositories
+                            //-----------------------
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, msRepoPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, msRepoPattern).permitAll();
+                            }
+                            auth.requestMatchers(msRepoPattern).authenticated();
 
-                        //Locations
-                        .requestMatchers(HttpMethod.GET, locationPattern).permitAll()
-                        .requestMatchers(locationPattern).authenticated()
-                )
+                            //Characters
+                            //----------
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, characterPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, characterPattern).permitAll();
+                            }
+                            auth.requestMatchers(characterPattern).authenticated();
+
+                            //Locations
+                            //---------
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, locationPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, locationPattern).permitAll();
+                            }
+                            auth.requestMatchers(locationPattern).authenticated();
+                        })
 
                 //Maximum number of sessions
                 .sessionManagement(session ->
