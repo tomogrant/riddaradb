@@ -1,0 +1,28 @@
+.nav-item{
+  font-size: 1.1rem;
+}
+
+.nav-link.active {
+  text-decoration: underline;
+  font-weight: bold;
+}
+
+.navbar-brand{
+  font-size: 1.5rem;
+}
+
+.page-footer{
+    color: white;
+    padding: 2rem;
+    background-color: rgb(128, 128, 128);
+}
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.content {
+  flex: 1;
+}

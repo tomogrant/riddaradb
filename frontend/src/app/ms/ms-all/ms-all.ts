@@ -1,0 +1,379 @@
+import {
+  FormGroup,
+  FormControl,
+  ReactiveFormsModule,
+  Validators,
+  ValidatorFn,
+  AbstractControl,
+  ValidationErrors,
+} from "@angular/forms";
+import { Component, computed, inject } from "@angular/core";
+import { Modal } from "bootstrap";
+import { RouterModule, Router } from "@angular/router";
+import { MsService } from "../common/ms.service";
+import { CommonModule } from "@angular/common";
+import { IMs } from "../common/IMs";
+import { IMsRepositoryVm } from "../common/IMsRepositoryVm";
+import { Mode } from "../../shared/Enums";
+import { IMsRepositoryDto } from "../common/IMsRepositoryDto";
+import { debounceTime, distinctUntilChanged } from "rxjs";
+import { RouterTestingHarness } from "@angular/router/testing";
+import { PageHeader } from "../../page-header/page-header";
+import { AuthService } from "../../auth/auth.service";
+
+@Component({
+  selector: "app-ms-all",
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, PageHeader],
+  templateUrl: "./ms-all.html",
+  styleUrl: "./ms-all.css",
+})
+export class MsAll {
+
+  private router = inject(Router);
+  private msService = inject(MsService);
+  private authService = inject(AuthService);
+
+  //Forms
+  editForm = new FormGroup({
+    id: new FormControl<number | null>({ value: null, disabled: true }),
+    name: new FormControl<string>("", {nonNullable: true, validators: [Validators.required, this.repositoryUnique()]}),
+    city: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
+    country: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
+  });
+
+  get name(): FormControl<string> {
+    return this.editForm.controls.name;
+  }
+
+  get city(): FormControl<string> {
+    return this.editForm.controls.city;
+  }
+
+  get country(): FormControl<string> {
+    return this.editForm.controls.country;
+  }
+
+  filterForm = new FormGroup({
+    filter: new FormControl("", { nonNullable: true }),
+  });
+
+  get filter(): FormControl<string> {
+    return this.filterForm.controls.filter;
+  }
+
+  //Variables
+  $loggedIn = computed(() => this.authService.$loggedIn());
+  $isAdmin = computed(() => this.authService.$isAdmin());
+  showValidationErrors: boolean = false;
+  repoToDelete: number = 0;
+
+  readonly Mode = Mode;
+  mode: Mode = Mode.NONE;
+
+  //Repository entry for editing and sending to the server
+  repositoryDto: IMsRepositoryDto = this.initialiseRepository();
+
+  //Repositories received from the server for processing into VMs
+  repositoriesDto: IMsRepositoryDto[] = [];
+
+  //VMs for display
+  repositoriesVm: IMsRepositoryVm[] = [];
+  filteredRepositoriesVm: IMsRepositoryVm[] = [];
+
+  //Manuscripts for assigning to repository VMs
+  mss: IMs[] = [];
+  filteredMss: IMs[] = [];
+
+  //Maps
+  repositoriesVmMap: Map<number, IMsRepositoryVm> = new Map<number, IMsRepositoryVm>();
+  msMap: Map<number, IMs> = new Map<number, IMs>();
+
+  ngOnInit() {
+    this.displayRepositories();
+
+    this.filter.valueChanges
+      .pipe(debounceTime(250), distinctUntilChanged())
+      .subscribe((value) => this.updateFilter(value));
+  }
+
+  //Builds repository view models and assigns manuscripts to them
+  //Alphabetises manuscripts and their repositories
+  sortManuscripts() {
+    this.repositoriesVm = [];
+
+    this.mss.forEach((ms) => {
+      if (ms.id) this.msMap.set(ms.id, ms);
+    });
+
+    this.repositoriesDto.forEach((repoDto) => {
+      var repoVm: IMsRepositoryVm = this.initialiseRepositoryVm();
+      if (repoDto.id) repoVm.id = repoDto.id;
+      repoVm.name = repoDto.name;
+      repoVm.city = repoDto.city;
+      repoVm.country = repoDto.country;
+
+      repoDto.msIds.forEach((id) => {
+        var ms = this.msMap.get(id);
+        if (ms && ms.id && ms.shelfmark) {
+          repoVm.manuscripts.push({
+            id: ms.id,
+            name: ms.name ?? null,
+            shelfmark: ms.shelfmark,
+          });
+        }
+      });
+
+      repoVm.manuscripts.sort((a, b) => a.shelfmark.localeCompare(b.shelfmark));
+      this.repositoriesVm.push(repoVm);
+      this.repositoriesVmMap.set(repoVm.id, repoVm);
+    });
+
+    this.repositoriesVm.sort((a, b) => a.name.localeCompare(b.name));
+  }
+
+  addRepository() {
+    this.mode = Mode.ADD;
+    this.editForm.reset();
+    this.showValidationErrors = false;
+    this.repositoryDto = this.initialiseRepository();
+    this.openAddEditModal();
+  }
+
+  editRepository(id: number) {
+    this.mode = Mode.EDIT;
+    this.editForm.reset();
+    this.showValidationErrors = false;
+    this.repositoryDto = this.initialiseRepository();
+    const repo = this.repositoriesVmMap.get(id);
+    if (repo) {
+      this.name.setValue(repo.name);
+      this.city.setValue(repo.city);
+      this.country.setValue(repo.country);
+      this.repositoryDto.id = id;
+    }
+    this.openAddEditModal();
+  }
+
+  deleteRepository() {
+    this.deleteMsRepository();
+    this.closeDeleteModal();
+  }
+
+  addManuscript(id: number) {
+    this.router.navigate([`ms/action/add/${id}`]);
+  }
+
+  openAddEditModal() {
+    var addEditModal = document.getElementById("addEditRepository");
+    if (addEditModal != null) {
+      var modal = Modal.getOrCreateInstance(addEditModal);
+      if (modal != null) {
+        modal.show();
+      }
+    }
+  }
+
+  closeAddEditModal() {
+    var addEditModal = document.getElementById("addEditRepository");
+    if (addEditModal != null) {
+      var modal = Modal.getInstance(addEditModal);
+      if (modal != null) {
+        modal.hide();
+      }
+    }
+  }
+
+  openDeleteModal(id: number) {
+    this.repoToDelete = id;
+    var deleteModal = document.getElementById("deleteRepo");
+    if (deleteModal != null) {
+      var modal = Modal.getOrCreateInstance(deleteModal);
+      modal?.show();
+    }
+  }
+
+  closeDeleteModal() {
+    var deleteModal = document.getElementById("deleteRepo");
+    if (deleteModal != null) {
+      var modal = Modal.getInstance(deleteModal);
+      modal?.hide();
+    }
+  }
+
+  initialiseRepository() {
+    return {
+      id: null,
+      name: "",
+      city: "",
+      country: "",
+      msIds: [],
+    };
+  }
+
+  initialiseRepositoryVm() {
+    return {
+      id: 0,
+      name: "",
+      city: "",
+      country: "",
+      manuscripts: [],
+      accordionOpen: false,
+    };
+  }
+
+  updateFilter(searchTerm: string) {
+    const cleanTerm = searchTerm?.trim().toLowerCase();
+
+    if (!cleanTerm) {
+      //
+      this.filteredRepositoriesVm = this.repositoriesVm.map((repo) => ({
+        ...repo,
+        isExpanded: false,
+      }));
+      return;
+    }
+
+    console.log("Search term: " + cleanTerm);
+
+    this.filteredRepositoriesVm = this.repositoriesVm
+      .map((repo) => {
+        //Keep only matching MSs
+        const matchingManuscripts = repo.manuscripts.filter(
+          (ms) => ms.shelfmark.toLowerCase().includes(cleanTerm) || ms.name?.toLowerCase().includes(cleanTerm),
+        );
+
+        //Return a shallow copy of the repository with the filtered MS list
+        return {
+          ...repo,
+          manuscripts: matchingManuscripts,
+          accordionOpen: matchingManuscripts.length > 0,
+        };
+      })
+      //Exclude repositories that end up with zero matching MSs
+      .filter((repo) => repo.manuscripts.length > 0);
+  }
+
+  submitAddOrEdit() {
+    this.name.updateValueAndValidity();
+    this.city.updateValueAndValidity();
+    this.country.updateValueAndValidity();
+
+    if (this.editForm.valid) {
+      this.closeAddEditModal();
+
+      this.repositoryDto.name = this.name.value;
+      this.repositoryDto.city = this.city.value;
+      this.repositoryDto.country = this.country.value;
+
+      if (this.mode === Mode.ADD) {
+        this.postMsRepository();
+      } else if (this.mode === Mode.EDIT) {
+        this.updateMsRepository();
+      }
+    } else {
+      this.showValidationErrors = true;
+    }
+  }
+
+  //CREATE
+  postMsRepository() {
+    this.msService.postMsRepository(this.repositoryDto).subscribe({
+      next: (repo) => {
+        console.log("Saved successfully! " + repo);
+        if (!repo.id) return;
+        //Add new repo to collection and repo map
+        var repoVm: IMsRepositoryVm = {
+          id: repo.id,
+          name: repo.name,
+          city: repo.city,
+          country: repo.country,
+          manuscripts: [],
+          accordionOpen: false,
+        };
+
+        this.repositoriesVm.push(repoVm);
+        this.repositoriesVmMap.set(repoVm.id, repoVm);
+        this.repositoriesVm.sort((a, b) => a.name.localeCompare(b.name));
+        this.updateFilter("");
+      },
+      error: (err) => {
+        console.log("Problem with saving.");
+      },
+    });
+  }
+
+  //READ
+  displayRepositories() {
+    this.msService.getMsRepositories().subscribe({
+      next: (receivedRepositories) => {
+        this.repositoriesDto = receivedRepositories;
+        this.msService.getMsEntries().subscribe({
+          next: (receivedManuscripts) => {
+            this.mss = receivedManuscripts;
+            this.sortManuscripts();
+            this.updateFilter("");
+          },
+          error: (err) => console.log("Error fetching mss: " + err),
+        });
+      },
+      error: (err) => console.log("Error fetching repositories: " + err),
+    });
+  }
+
+  //UPDATE
+  updateMsRepository() {
+    this.msService.putMsRepository(this.repositoryDto).subscribe({
+      next: (repo) => {
+        console.log("Updated successfully! " + repo);
+        var repoToChange = this.repositoriesVm.find((repoInCollection) => repoInCollection.id == repo.id);
+        if (repoToChange) {
+          repoToChange.name = repo.name;
+          repoToChange.city = repo.city;
+          repoToChange.country = repo.country;
+          this.repositoriesVmMap.set(repo.id, repo);
+          this.repositoriesVm.sort((a, b) => a.name.localeCompare(b.name));
+          this.updateFilter("");
+        }
+      },
+      error: (err) => {
+        console.log("Problem with saving.");
+      },
+    });
+  }
+
+  //DELETE
+  deleteMsRepository() {
+    this.msService.deleteMsRepository(this.repoToDelete).subscribe({
+      next: (repo) => {
+        console.log("Deleted successfully: " + repo);
+        var repoIndex = this.repositoriesVm.findIndex((repoVm) => repoVm.id == this.repoToDelete);
+        console.log("Repo index: " + repoIndex);
+        this.repositoriesVm.splice(repoIndex, 1);
+        this.repositoriesVmMap.delete(this.repoToDelete);
+        this.repositoriesVm.sort((a, b) => a.name.localeCompare(b.name));
+        this.updateFilter("");
+      },
+      error: (err) => {
+        console.log("Problem deleting; " + JSON.stringify(err.error));
+      },
+    });
+  }
+
+  repositoryUnique(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? "")
+        .trim()
+        .toLowerCase();
+
+      if (!value) {
+        return null;
+      }
+
+      const duplicate = this.repositoriesDto.find(
+        (dto) => dto.name.trim().toLowerCase() === value && dto.id !== control.parent?.get("id")?.value,
+      );
+
+      return duplicate ? { repositoryNotUnique: true } : null;
+    };
+  }
+}

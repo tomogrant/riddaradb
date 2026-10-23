@@ -1,0 +1,50 @@
+import { Component, computed, inject, OnInit } from "@angular/core";
+import { PageHeader } from "../../page-header/page-header";
+import { RouterModule, Router } from "@angular/router";
+import { CommonModule } from "@angular/common";
+import { SagaService } from "../common/saga.service";
+import { SagaMapper } from "../common/saga.mapper";
+import { ISagaVm } from "../common/ISagaVm";
+import { ISagaTitleDto } from "../common/ISagaTitleDto";
+import { AuthService } from "../../auth/auth.service";
+
+@Component({
+  selector: "app-sagas",
+  imports: [CommonModule, RouterModule, PageHeader],
+  templateUrl: "./saga-all.html",
+  styleUrl: "./saga-all.css",
+})
+export class SagaAll implements OnInit {
+
+  private sagaService = inject(SagaService);
+  private router = inject(Router);
+  private authService = inject(AuthService);
+
+  $loggedIn = computed(() => this.authService.$loggedIn());
+
+  sagas: ISagaTitleDto[] = [];
+
+  ngOnInit() {
+    this.displaySagas();
+  }
+
+  //---------------
+  //     CRUD
+  //---------------
+
+  addSaga() {
+    this.router.navigate([`sagas/action/add`]);
+  }
+
+  //READ
+  displaySagas() {
+    this.sagaService.getSagaTitles().subscribe({
+      next: (receivedSagas) => {
+        this.sagas = receivedSagas;
+
+        this.sagas.sort((a, b) => a.title.localeCompare(b.title));
+      },
+      error: (err) => console.log("Error fetching sagas: " + JSON.stringify(err.error)),
+    });
+  }
+}
