@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class ConfigService {
 
-    @Value("${app.site-locked}")
+    @Value("${app.site-locked:true}")
     private boolean siteLocked;
 
     public Config getConfig(){

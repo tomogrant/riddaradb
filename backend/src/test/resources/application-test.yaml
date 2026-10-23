@@ -19,7 +19,10 @@ app:
   admin:
     username: test-admin
     password: test-password
-
+  site-locked: false
+  motifs:
+    max-search-results: 200
+    import-motifs-on-startup: false
 
 logging:
   level:

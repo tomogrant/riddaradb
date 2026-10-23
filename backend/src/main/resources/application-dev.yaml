@@ -22,6 +22,7 @@ app:
   site-locked: false
   motifs:
     max-search-results: 200
+    import-motifs-on-startup: true
 
 server:
   servlet:

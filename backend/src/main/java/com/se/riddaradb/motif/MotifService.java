@@ -4,7 +4,6 @@ import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.exceptions.TooManyResultsException;
 import com.se.riddaradb.sagaversion.*;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
