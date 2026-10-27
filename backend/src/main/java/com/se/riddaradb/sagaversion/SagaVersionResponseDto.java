@@ -10,16 +10,22 @@ public class SagaVersionResponseDto {
 
     private Integer id;
     private String title;
+    private String abbreviation;
     private String description;
-    private SagaVersionEntity.SagaDate date;
+    private SagaDate date;
     private Integer sagaId;
     private Set<SagaVersionMotifDto> sagaMotifs;
     private Set<CharacterDto> characters;
     private Set<LocationDto> locations;
 
-    public SagaVersionResponseDto(Integer id, String title, String description, SagaVersionEntity.SagaDate date) {
+    public SagaVersionResponseDto(Integer id,
+                                  String title,
+                                  String abbreviation,
+                                  String description,
+                                  SagaDate date) {
         this.id = id;
         this.title = title;
+        this.abbreviation = abbreviation;
         this.description = description;
         this.date = date;
         sagaMotifs = new HashSet<>();
@@ -43,6 +49,14 @@ public class SagaVersionResponseDto {
         this.title = title;
     }
 
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -51,11 +65,11 @@ public class SagaVersionResponseDto {
         this.description = description;
     }
 
-    public SagaVersionEntity.SagaDate getDate() {
+    public SagaDate getDate() {
         return date;
     }
 
-    public void setDate(SagaVersionEntity.SagaDate date) {
+    public void setDate(SagaDate date) {
         this.date = date;
     }
 

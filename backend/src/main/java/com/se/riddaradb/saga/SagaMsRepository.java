@@ -8,8 +8,8 @@ import java.util.Set;
 @Repository
 public interface SagaMsRepository extends JpaRepository<SagaMsEntity, SagaMsKey> {
 
-    Set<SagaMsEntity> findBySagaEntityId(int id);
+    Set<SagaMsEntity> findBySagaEntityId(Integer id);
 
-    Set<SagaMsEntity> findByMsEntityId(int id);
+    Set<SagaMsEntity> findByMsEntityId(Integer id);
 
 }

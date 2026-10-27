@@ -1,6 +1,5 @@
 package com.se.riddaradb.location;
 
-import com.se.riddaradb.character.CharacterEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import org.springframework.stereotype.Service;
 
@@ -10,12 +9,14 @@ import java.util.stream.Collectors;
 public class LocationMapper {
 
     public LocationDto mapToDto(LocationEntity locationEntity){
-        LocationDto locationDto = new LocationDto(locationEntity.getId(), locationEntity.getName(), locationEntity.getType());
+        LocationDto locationDto = new LocationDto(locationEntity.getId(), locationEntity.getName());
 
-        locationDto.setCharacterIds(locationEntity.getCharacterEntities()
-                .stream()
-                .map(CharacterEntity::getId)
-                .collect(Collectors.toSet()));
+        for (LocationCharacterEntity locationCharacterEntity : locationEntity.getLocationCharacterEntities()){
+            locationDto.getLocationCharacterDtos().add(new LocationCharacterDto(
+                    locationCharacterEntity.getCharacterEntity().getId(),
+                    locationCharacterEntity.getSignificantAssociation())
+            );
+        }
 
         locationDto.setSagaVersionIds(locationEntity.getSagaVersionEntities()
                 .stream()
@@ -23,9 +24,5 @@ public class LocationMapper {
                 .collect(Collectors.toSet()));
 
         return locationDto;
-    }
-
-    public LocationEntity mapFromDto(LocationDto locationDto){
-        return new LocationEntity(locationDto.getId(), locationDto.getName(), locationDto.getType());
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collection;
 
 @RestController
+@RequestMapping("/characters/")
 public class CharacterController {
 
     final CharacterService characterService;
@@ -13,27 +14,27 @@ public class CharacterController {
         this.characterService = characterService;
     }
 
-    @GetMapping("/getcharacters")
+    @GetMapping("getcharacters")
     Collection<CharacterDto> getCharacterEntry(){
         return characterService.getCharacterEntries();
     }
 
-    @GetMapping("/getcharacterbyid/{id}")
+    @GetMapping("getcharacterbyid/{id}")
     CharacterDto getCharacterEntryById(@PathVariable int id){
         return characterService.getCharacterEntryById(id);
     }
 
-    @PostMapping("/postcharacter")
+    @PostMapping("postcharacter")
     CharacterDto postCharacterEntry(@RequestBody @Valid CharacterDto characterDto){
         return characterService.saveCharacterEntry(characterDto);
     }
 
-    @PutMapping("/putcharacter")
+    @PutMapping("putcharacter")
     CharacterDto putCharacterEntry(@RequestBody @Valid CharacterDto characterDto){
         return characterService.updateCharacterEntry(characterDto);
     }
 
-    @DeleteMapping("/deletecharacter/{id}")
+    @DeleteMapping("deletecharacter/{id}")
     void deleteCharacterEntry(@PathVariable int id){
         characterService.deleteCharacterEntryById(id);
     }

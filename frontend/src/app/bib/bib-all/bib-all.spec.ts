@@ -34,9 +34,7 @@ describe("BibAll", () => {
 
   beforeEach(async () => {
     const bibServiceSpy = jasmine.createSpyObj<BibService>(["getBibEntries"]);
-    bibServiceSpy.getBibEntries.and.callFake(function () {
-      return of(bibs);
-    });
+    bibServiceSpy.getBibEntries.and.returnValue(of(bibs));
 
     await TestBed.configureTestingModule({
       imports: [BibAll],
@@ -66,6 +64,10 @@ describe("BibAll", () => {
   });
 
   it("ngOnInit should return bibliography entries", () => {
+
+    const bibService = TestBed.inject(BibService) as jasmine.SpyObj<BibService>;
+
+    expect(bibService.getBibEntries).toHaveBeenCalledTimes(1);
     expect(component.bibs.length).toBeGreaterThanOrEqual(1);
     expect(component.bibs[0].title).toEqual(bib.title);
     expect(component.bibsVm.length).toBeGreaterThanOrEqual(1);

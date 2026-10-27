@@ -5,6 +5,8 @@ import com.se.riddaradb.motif.MotifEntity;
 import com.se.riddaradb.location.LocationEntity;
 import com.se.riddaradb.saga.SagaEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Objects;
@@ -14,27 +16,20 @@ import java.util.Set;
 @Table(name = "sagaversion")
 public class SagaVersionEntity {
 
-    public enum SagaDate {
-        UNDEFINED,
-        UNKNOWN,
-        _1200_1250,
-        _1250_1300,
-        _1300_1350,
-        _1350_1400,
-        _1400_1450,
-        _1450_1500,
-        _1500_1550
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @NotBlank
     private String title;
+
+    @NotBlank
+    private String abbreviation;
 
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotNull
     private SagaDate date;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -60,9 +55,10 @@ public class SagaVersionEntity {
     public SagaVersionEntity() {
     }
 
-    public SagaVersionEntity(Integer id, String title, String description, SagaDate date) {
+    public SagaVersionEntity(Integer id, String title, String abbreviation, String description, SagaDate date) {
         this.id = id;
         this.title = title;
+        this.abbreviation = abbreviation;
         this.description = description;
         this.date = date;
     }
@@ -93,6 +89,14 @@ public class SagaVersionEntity {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
     }
 
     public String getDescription() {

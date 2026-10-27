@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Entity
@@ -14,23 +15,13 @@ public class LocationEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    int id;
+    Integer id;
 
     @NotBlank
     String name;
 
-    @Enumerated(EnumType.STRING)
-    Type type;
-
-    public enum Type {
-        COUNTRY, SETTLEMENT, SITE, OTHER
-    }
-
-    @ManyToMany()
-    @JoinTable(name = "location-character",
-            joinColumns = @JoinColumn(name = "location_id"),
-            inverseJoinColumns = @JoinColumn(name = "character_id"))
-    Set<CharacterEntity> characterEntities = new HashSet<>();
+    @OneToMany(mappedBy = "locationEntity",  cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<LocationCharacterEntity> locationCharacterEntities = new HashSet<>();
 
     @ManyToMany(mappedBy = "locationEntities")
     Set<SagaVersionEntity> sagaVersionEntities = new HashSet<>();
@@ -38,17 +29,28 @@ public class LocationEntity {
     protected LocationEntity() {
     }
 
-    public LocationEntity(int id, String name, Type type) {
+    public LocationEntity(Integer id, String name) {
         this.id = id;
         this.name = name;
-        this.type = type;
     }
 
-    public int getId() {
+    public void addCharacter(CharacterEntity characterEntity, Boolean significantAssociation){
+        LocationCharacterEntity locationCharacterEntity = new LocationCharacterEntity(this, characterEntity, significantAssociation);
+
+        getLocationCharacterEntities().add(locationCharacterEntity);
+        characterEntity.getLocationCharacterEntities().add(locationCharacterEntity);
+    }
+
+    public void removeCharacter(CharacterEntity characterEntity) {
+        getLocationCharacterEntities().removeIf(locationCharacter -> Objects.equals(locationCharacter.getCharacterEntity().getId(), characterEntity.getId()));
+        characterEntity.getLocationCharacterEntities().removeIf(locationCharacter -> Objects.equals(locationCharacter.getLocationEntity().getId(), getId()));
+    }
+
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -60,20 +62,12 @@ public class LocationEntity {
         this.name = name;
     }
 
-    public Type getType() {
-        return type;
+    public Set<LocationCharacterEntity> getLocationCharacterEntities() {
+        return locationCharacterEntities;
     }
 
-    public void setType(Type type) {
-        this.type = type;
-    }
-
-    public Set<CharacterEntity> getCharacterEntities() {
-        return characterEntities;
-    }
-
-    public void setCharacterEntities(Set<CharacterEntity> characterEntities) {
-        this.characterEntities = characterEntities;
+    public void setLocationCharacterEntities(Set<LocationCharacterEntity> locationCharacterEntities) {
+        this.locationCharacterEntities = locationCharacterEntities;
     }
 
     public Set<SagaVersionEntity> getSagaVersionEntities() {

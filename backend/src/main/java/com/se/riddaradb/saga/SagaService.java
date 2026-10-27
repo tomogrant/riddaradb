@@ -4,8 +4,6 @@ import com.se.riddaradb.bib.BibRepository;
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.ms.MsRepository;
 import com.se.riddaradb.sagaversion.*;
-import jakarta.validation.Valid;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,8 +99,12 @@ public class SagaService {
 
         //Saga versions
         for (SagaVersionRequestDto sagaVersionRequestDto : sagaRequestDto.getSagaVersions()){
-            sagaEntity.addSagaVersion(new SagaVersionEntity(null, sagaVersionRequestDto.getTitle(), sagaVersionRequestDto.getDescription(), sagaVersionRequestDto.getDate()));
-            System.out.println("Saga ID: " + sagaEntity.getSagaVersionEntities().stream().findFirst().get().getSagaEntity().getId());
+            sagaEntity.addSagaVersion(new SagaVersionEntity(
+                    null,
+                    sagaVersionRequestDto.getTitle(),
+                    sagaVersionRequestDto.getAbbreviation(),
+                    sagaVersionRequestDto.getDescription(),
+                    sagaVersionRequestDto.getDate()));
         }
 
         //Manuscript entries
@@ -127,7 +129,11 @@ public class SagaService {
         for (SagaVersionRequestDto sagaVersionDto : sagaRequestDto.getSagaVersions()){
             //Incoming saga version is new and lacks ID; add to saga version
             if (sagaVersionDto.getId() == null){
-                sagaEntity.addSagaVersion(new SagaVersionEntity(null, sagaVersionDto.getTitle(), sagaVersionDto.getDescription(), sagaVersionDto.getDate()));
+                sagaEntity.addSagaVersion(new SagaVersionEntity(null,
+                        sagaVersionDto.getTitle(),
+                        sagaVersionDto.getAbbreviation(),
+                        sagaVersionDto.getDescription(),
+                        sagaVersionDto.getDate()));
             }
             else{
                 //If saga version already present, update it
@@ -138,6 +144,7 @@ public class SagaService {
                         .orElseThrow(() -> new ResourceNotFoundException("Saga version not found"));
 
                 sagaVersionEntity.setTitle(sagaVersionDto.getTitle());
+                sagaVersionEntity.setAbbreviation(sagaVersionDto.getAbbreviation());
                 sagaVersionEntity.setDescription(sagaVersionDto.getDescription());
                 sagaVersionEntity.setDate(sagaVersionDto.getDate());
             }
@@ -204,7 +211,7 @@ public class SagaService {
             sagaRepository.deleteById(id);
         }
         else {
-            System.out.println("Record not found in database.");
+            throw new ResourceNotFoundException("Saga not found in database");
         }
     }
 

@@ -57,6 +57,8 @@ export class BibSingle {
 
   defaultPublicationTypeOption: string = "Select publication type:";
 
+  loading: boolean = false;
+
   editForm = new FormGroup(
     {
       type: new FormControl<string>(this.defaultPublicationTypeOption, {
@@ -458,11 +460,13 @@ export class BibSingle {
     this.mode = Mode.ADD;
 
     this.activeBib = this.initialiseBib();
+    this.loading = false;
     this.openAddEditModal();
   }
 
   editBib() {
     this.mode = Mode.EDIT;
+    this.loading = false;
     this.openAddEditModal();
 
     //Shouldn't be possible
@@ -515,8 +519,6 @@ export class BibSingle {
     });
 
     if (this.editForm.valid) {
-      this.closeAddEditModal();
-
       if (this.mode === Mode.ADD) {
         this.postBib();
       }
@@ -710,9 +712,12 @@ export class BibSingle {
 
   //CREATE
   postBib() {
+    this.loading = true;
     this.fillBibDto();
     this.bibService.postBib(this.activeBib).subscribe({
       next: (receivedBib) => {
+        this.loading = false;
+        this.closeAddEditModal();
         console.log("bib posted: " + receivedBib);
         //TODO: Make sure you optimistically update this rather than just going back to the page.
         if (receivedBib.id != null) this.navigateToBibEntryPage(receivedBib.id);
@@ -723,9 +728,12 @@ export class BibSingle {
 
   //UPDATE
   updateBib() {
+    this.loading = true;
     this.fillBibDto();
     this.bibService.putBib(this.activeBib).subscribe({
       next: (receivedBib) => {
+        this.loading = false;
+        this.closeAddEditModal();
         console.log("bibliography entry updated; sagas got from backend: " + receivedBib.sagaIds);
         this.activeBib = receivedBib;
         this.activeBibVm = this.bibMapper.mapDtoToVm(this.activeBib);

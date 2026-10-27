@@ -14,27 +14,27 @@ public class LocationController {
         this.locationService = locationService;
     }
 
-    @GetMapping("/getlocations")
+    @GetMapping("getlocations")
     Collection<LocationDto> getLocationEntry(){
         return locationService.getLocationEntries();
     }
 
-    @GetMapping("/getlocationbyid/{id}")
+    @GetMapping("getlocationbyid/{id}")
     LocationDto getLocationEntryById(@PathVariable int id){
         return locationService.getLocationEntryById(id);
     }
 
-    @PostMapping("/postlocation")
+    @PostMapping("postlocation")
     LocationDto postLocationEntry(@RequestBody @Valid LocationDto locationDto){
         return locationService.saveLocationEntry(locationDto);
     }
 
-    @PutMapping("/putlocation")
+    @PutMapping("putlocation")
     LocationDto putLocationEntry(@RequestBody @Valid LocationDto locationDto){
-        return locationService.saveLocationEntry(locationDto);
+        return locationService.updateLocationEntry(locationDto);
     }
 
-    @DeleteMapping("/deletelocation/{id}")
+    @DeleteMapping("deletelocation/{id}")
     void deleteLocationEntry(@PathVariable int id){
         locationService.deleteLocationEntryById(id);
     }

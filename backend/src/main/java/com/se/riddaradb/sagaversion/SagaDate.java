@@ -1,0 +1,13 @@
+package com.se.riddaradb.sagaversion;
+
+public enum SagaDate {
+    UNDEFINED,
+    UNKNOWN,
+    _1200_1250,
+    _1250_1300,
+    _1300_1350,
+    _1350_1400,
+    _1400_1450,
+    _1450_1500,
+    _1500_1550
+}

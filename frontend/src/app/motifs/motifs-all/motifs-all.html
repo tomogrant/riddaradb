@@ -14,7 +14,7 @@
               type="button"
               data-testid="clear-pinned-nodes-button"
               class="btn btn-sm btn-outline-danger"
-              (click)="clearPinnedNodes()">
+              (click)="openClearPinboardModal()">
               <i class="bi bi-x-lg"></i>
             </button>
           </div>
@@ -53,7 +53,7 @@
                       [attr.data-testid]="'toggle-pinned-node-button-' + i"
                       class="btn btn-sm btn-outline-secondary me-1"
                       (click)="togglePinnedNode(node.id!)">
-                      <i class="bi bi-pin-angle"></i>
+                      <i class="bi bi-pin-angle-fill"></i>
                     </button>
                   </span>
                 </div>
@@ -107,7 +107,7 @@
       <div class="col-12 col-md-4 d-flex">
         <span class="mt-1">
           <b>
-            {{$searchMessage()}}
+            {{ $searchMessage() }}
           </b>
         </span>
       </div>
@@ -115,8 +115,12 @@
   </div>
 
   <!-- ROOT MOTIF CARDS -->
-  @for (rootId of $rootIds(); track rootId) {
-    <app-motif-node [$nodeId]="rootId" [$depth]="1"></app-motif-node>
+  @if (initialising) {
+    <div class="spinner-border spinner-border-lg" role="status"> </div>
+  } @else {
+    @for (rootId of $rootIds(); track rootId) {
+      <app-motif-node [$nodeId]="rootId" [$depth]="1"></app-motif-node>
+    }
   }
 
   @if ($loggedIn()) {
@@ -288,6 +292,32 @@
           Back
         </button>
         <button type="submit" class="btn btn-danger" data-bs-dismiss="modal" (click)="deleteMotif()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Close pinboard modal-->
+<div
+  class="modal fade"
+  id="pinboardModal"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Clear pinboard?</h1>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">Are you sure? This will remove all pinned motifs.</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="closeClearPinboardModal()">
+          Back
+        </button>
+        <button type="submit" class="btn btn-danger" data-bs-dismiss="modal" (click)="clearPinnedNodes()">Clear</button>
       </div>
     </div>
   </div>

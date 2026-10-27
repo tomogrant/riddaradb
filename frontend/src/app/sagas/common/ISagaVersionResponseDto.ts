@@ -5,6 +5,7 @@ import { SagaDate } from './SagaDate';
 export interface ISagaVersionResponseDto {
   id: number;
   title: string;
+  abbreviation: string;
   description: string;
   date: SagaDate;
   sagaId: number;  

@@ -4,16 +4,20 @@
 
 <div class="card-body page-container">
   <div class="container">
-    @for (saga of sagas; track saga.id) {
-      <div class="row">
-        <div class="col-2 ms-3">
-          <h4>
-            <i>
-              <a [routerLink]="['/sagas', saga.id]">{{ saga.title }}</a>
-            </i>
-          </h4>
+    @if (initialising) {
+      <div class="spinner-border spinner-border-lg" role="status"> </div>
+    } @else {
+      @for (saga of sagas; track saga.id) {
+        <div class="row">
+          <div class="col-2 ms-3">
+            <h4>
+              <i>
+                <a [routerLink]="['/sagas', saga.id]">{{ saga.title }}</a>
+              </i>
+            </h4>
+          </div>
         </div>
-      </div>
+      }
     }
 
     @if ($loggedIn()) {

@@ -31,3 +31,8 @@
   height: 1.9rem;
 }
 
+mark {
+  border: none !important;
+  outline: none !important;
+}
+

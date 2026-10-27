@@ -1,9 +1,13 @@
 <app-page-header backgroundImg="vignette.jpg">
-  <i>{{ sagaEntry.title }}</i> (<i>{{ sagaEntry.translatedTitle }}</i
-  >)
+  @if (initialising) {
+    <div class="spinner-border spinner-border-lg" role="status"> </div>
+  } @else {
+    <i>{{ sagaEntry.title }}</i> (<i>{{ sagaEntry.translatedTitle }}</i
+    >)
+  }
 </app-page-header>
 
-@if (sagaEntry) {
+@if (!initialising) {
   <div class="card-body page-container">
     <div class="container">
       <div class="row mb-3">
@@ -33,6 +37,15 @@
         </div>
       }
 
+      @if (sagaEntry.sagaVersions.length == 1 && sagaEntry.sagaVersions[0].abbreviation) {
+        <div class="row mb-3">
+          <div class="col">
+            <strong>Abbreviation:</strong>
+            {{ sagaEntry.sagaVersions[0].abbreviation }}
+          </div>
+        </div>
+      }
+
       @if (sagaEntry.description != "") {
         <div class="row mb-4 description-text" [innerHTML]="sagaEntry.description"></div>
       }
@@ -41,8 +54,7 @@
       @for (version of sagaEntry.sagaVersions; track $index) {
         @if (sagaEntry.sagaVersions.length > 1) {
           <div class="row">
-
-            <hr>
+            <hr />
             <!-- Title -->
             <h2 class="my-2">
               <i>{{ version.title }}</i>
@@ -58,6 +70,13 @@
             </div>
           </div>
         }
+
+        <div class="row mb-3">
+          <div class="col">
+            <strong>Abbreviation:</strong>
+            {{ version.abbreviation }}
+          </div>
+        </div>
 
         @if (sagaEntry.sagaVersions.length > 1 && version.description != "") {
           <div class="row mb-3">
@@ -244,9 +263,30 @@
             </div>
 
             <div class="row mb-2">
-              <!-- DATE FIELD -->
               @if (sagaVersionForms.length == 1) {
-                <div class="col-4" formArrayName="sagaVersionForms">
+                <!-- ABBREVIATION FIELD -->
+                <div class="col" formArrayName="sagaVersionForms">
+                  <div [formGroupName]="0">
+                    <label for="saga-version-abbreviation" class="form-label">Abbreviated title:</label>
+                    <span class="red">*</span>
+                    <input
+                      type="text"
+                      class="form-control"
+                      formControlName="abbreviation"
+                      placeholder="Abbreviation"
+                      [class.invalid-input]="sagaVersionForms.controls[0].invalid && showValidationErrors" />
+                    @if (sagaVersionForms.controls[0].get("abbreviation")?.invalid && showValidationErrors) {
+                      @if (sagaVersionForms.controls[0].get("abbreviation")?.hasError("required")) {
+                        <div class="red">
+                          <small>Abbreviation is required.</small>
+                        </div>
+                      }
+                    }
+                  </div>
+                </div>
+
+                <!-- DATE FIELD -->
+                <div class="col" formArrayName="sagaVersionForms">
                   <div [formGroupName]="0">
                     <label for="saga-version-date" class="form-label">Earliest manuscript attestation:</label>
                     <span class="red">*</span>
@@ -482,7 +522,7 @@
                   <!-- TITLE FIELD -->
                   <div class="row my-4">
                     @if (sagaVersionForms.length > 1) {
-                      <div class="col-5">
+                      <div class="col">
                         <label for="saga-version-title" class="form-label">Saga version title:</label>
                         <span class="red">*</span>
                         <input
@@ -507,8 +547,29 @@
                     }
 
                     @if (sagaVersionForms.length > 1) {
+                      <!-- ABBREVIATION FIELD -->
+                      <div class="col">
+                        <label for="saga-version-abbreviation" class="form-label">Abbreviated title:</label>
+                        <span class="red">*</span>
+                        <input
+                          type="text"
+                          class="form-control"
+                          formControlName="abbreviation"
+                          placeholder="Abbreviation"
+                          [class.invalid-input]="
+                            sagaVersionForm.get('abbreviation')?.invalid && showValidationErrors
+                          " />
+                        @if (sagaVersionForm.get("abbreviation")?.invalid && showValidationErrors) {
+                          @if (sagaVersionForm.get("abbreviation")?.hasError("required")) {
+                            <div class="red">
+                              <small>Abbreviation is required.</small>
+                            </div>
+                          }
+                        }
+                      </div>
+
                       <!-- DATE FIELD -->
-                      <div class="col-5">
+                      <div class="col">
                         <label for="saga-version-date" class="form-label">Earliest manuscript attestation:</label>
                         <span class="red">*</span>
                         <select
@@ -516,7 +577,6 @@
                           formControlName="date"
                           id="saga-version-date"
                           [class.invalid-input]="sagaVersionForm.get('date')?.invalid && showValidationErrors">
-                          <!-- Define these in the TS file -->
                           <option [value]="selectADateText" disabled>{{ selectADateText }}</option>
                           @for (sagaDate of sagaDatesUi; track $index) {
                             <option [value]="sagaDate">{{ sagaDate }}</option>
@@ -641,8 +701,17 @@
           class="btn btn-secondary">
           Close
         </button>
-        <button data-testid="save-button" (click)="submitAddOrEdit()" type="submit" class="btn btn-primary">
-          Save
+        <button
+          data-testid="save-button"
+          [disabled]="loading"
+          (click)="submitAddOrEdit()"
+          type="submit"
+          class="btn btn-primary spinner-button">
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <div> Submit </div>
+          }
         </button>
       </div>
     </div>
@@ -671,15 +740,24 @@
       <div class="modal-body">Are you sure?</div>
       <div class="modal-footer">
         <button (click)="closeDeleteModal()" type="button" class="btn btn-secondary">Back</button>
-        <button data-testid="delete-confirm-button" (click)="deleteSaga()" type="submit" class="btn btn-danger">
-          Delete
+        <button
+          data-testid="delete-confirm-button"
+          (click)="deleteSaga()"
+          [disabled]="loading"
+          type="submit"
+          class="btn btn-danger spinner-button">
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            Delete
+          }
         </button>
       </div>
     </div>
   </div>
 </div>
 
-<!--Delete modal-->
+<!--Cite modal-->
 <div
   class="modal fade"
   id="citeSaga"

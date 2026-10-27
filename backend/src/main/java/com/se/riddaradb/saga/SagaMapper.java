@@ -18,7 +18,13 @@ public class SagaMapper {
     }
 
     public SagaResponseDto mapToResponseDto(SagaEntity sagaEntity){
-        SagaResponseDto sagaResponseDto = new SagaResponseDto(sagaEntity.getId(), sagaEntity.getTitle(), sagaEntity.getTranslatedTitle(), sagaEntity.getPageAuthor(), sagaEntity.getDescription(), sagaEntity.getTranslated());
+        SagaResponseDto sagaResponseDto = new SagaResponseDto(
+                sagaEntity.getId(),
+                sagaEntity.getTitle(),
+                sagaEntity.getTranslatedTitle(),
+                sagaEntity.getPageAuthor(),
+                sagaEntity.getDescription(),
+                sagaEntity.getTranslated());
 
         //Set saga versions
         sagaResponseDto.setSagaVersions(sagaEntity.getSagaVersionEntities()

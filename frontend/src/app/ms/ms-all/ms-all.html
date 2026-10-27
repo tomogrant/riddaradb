@@ -10,7 +10,7 @@
     </div>
 
     <div class="accordion" id="accordion-container">
-      @for (repo of filteredRepositoriesVm; track $index) {
+      @for (repo of filteredRepositoriesVm; track $index; let i = $index) {
         <div class="row g-0">
           <div class="custom-shadow">
             <div class="col-12">
@@ -56,12 +56,13 @@
               <div class="col">
                 <div class="card rounded-0 beige">
                   <span class="m-2">
-                    <button type="button" class="me-1 btn btn-sm btn-outline-success" (click)="addManuscript(repo.id)">
+                    <button type="button" [attr.data-testid]="'add-ms-button-' + i" class="me-1 btn btn-sm btn-outline-success" (click)="addManuscript(repo.id)">
                       Add MS
                     </button>
 
                     <button
                       type="button"
+                      [attr.data-testid]="'edit-repo-button-' + i"
                       class="me-1 btn btn-sm btn-outline-secondary"
                       (click)="editRepository(repo.id)">
                       Edit
@@ -69,12 +70,12 @@
 
                     @if (repo.manuscripts.length > 0) {
                       @if ($isAdmin()) {
-                        <button type="button" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
+                        <button type="button" [attr.data-testid]="'delete-repo-button-' + i" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
                           Delete
                         </button>
                       }
                     } @else {
-                      <button type="button" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
+                      <button type="button" [attr.data-testid]="'delete-repo-button-' + i" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
                         Delete
                       </button>
                     }
@@ -95,7 +96,7 @@
       <!-- 'Add' button -->
       <div class="row mt-4">
         <div class="col">
-          <button (click)="addRepository()" type="button" class="btn btn-success btn-sm">Add repository</button>
+          <button (click)="addRepository()" type="button" data-testid="add-repo-button" class="btn btn-success btn-sm">Add repository</button>
         </div>
       </div>
     }

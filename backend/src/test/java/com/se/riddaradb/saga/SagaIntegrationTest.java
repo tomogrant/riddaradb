@@ -5,7 +5,7 @@ import com.se.riddaradb.bib.BibEntity;
 import com.se.riddaradb.bib.BibService;
 import com.se.riddaradb.ms.MsDto;
 import com.se.riddaradb.ms.MsService;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
+import com.se.riddaradb.sagaversion.SagaDate;
 import com.se.riddaradb.sagaversion.SagaVersionRequestDto;
 import com.se.riddaradb.sagaversion.SagaVersionResponseDto;
 import org.junit.jupiter.api.*;
@@ -108,8 +108,9 @@ public class SagaIntegrationTest {
         SagaVersionRequestDto sagaVersionRequestDto = new SagaVersionRequestDto(
                 sagaResponseDto.getSagaVersions().stream().findFirst().orElseThrow().getId(),
                 "New title",
+                "New abbreviation",
                 "New description",
-                SagaVersionEntity.SagaDate.UNDEFINED);
+                SagaDate.UNDEFINED);
 
         sagaRequestDto.setSagaVersions(Set.of(sagaVersionRequestDto));
         sagaRequestDto.setBibIds(Set.of(sagaResponseDto.getBibDtos().stream().findFirst().orElseThrow().getId()));
@@ -246,8 +247,9 @@ public class SagaIntegrationTest {
         return new SagaVersionRequestDto(
                 null,
                 "Title",
+                "Abbrev",
                 "Description",
-                SagaVersionEntity.SagaDate.UNDEFINED);
+                SagaDate.UNDEFINED);
     }
 
     private BibDto createBibDto() {

@@ -1,12 +1,9 @@
 package com.se.riddaradb.ms;
 
-import com.se.riddaradb.motif.MotifDto;
-import com.se.riddaradb.motif.MotifSagaVersionDto;
-import com.se.riddaradb.motif.MotifService;
 import com.se.riddaradb.saga.SagaRequestDto;
 import com.se.riddaradb.saga.SagaResponseDto;
 import com.se.riddaradb.saga.SagaService;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
+import com.se.riddaradb.sagaversion.SagaDate;
 import com.se.riddaradb.sagaversion.SagaVersionRequestDto;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -266,8 +263,9 @@ public class MsIntegrationTest {
         return new SagaVersionRequestDto(
                 null,
                 "Title",
+                "Abbreviation",
                 "Description",
-                SagaVersionEntity.SagaDate.UNDEFINED);
+                SagaDate.UNDEFINED);
     }
 
     private MsSagaDto createMsSagaDto(){

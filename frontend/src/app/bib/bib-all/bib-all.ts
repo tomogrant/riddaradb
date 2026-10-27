@@ -32,6 +32,8 @@ export class BibAll {
   primarySources: IBibVm[] = [];
   secondarySources: IBibVm[] = [];
 
+  initialising: boolean = false;
+
   readonly PublicationType = PublicationType;
   readonly Mode = Mode;
   mode: Mode = Mode.NONE;
@@ -76,8 +78,10 @@ export class BibAll {
 
   //READ
   displayBibs() {
+    this.initialising = true;
     this.bibService.getBibEntries().subscribe({
       next: (receivedBibs) => {
+        this.initialising = false;
         this.bibs = receivedBibs;
         this.bibs.forEach((bib) => {
           this.bibsVm.push(this.bibMapper.mapDtoToVm(bib));

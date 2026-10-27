@@ -74,6 +74,7 @@ export class SagaMapper {
     return {
       id: vm.id,
       title: vm.title,
+      abbreviation: vm.abbreviation,
       description: vm.description,
       date: vm.date,
       sagaId: vm.sagaId,
@@ -86,6 +87,7 @@ export class SagaMapper {
     return {
       id: dto.id,
       title: dto.title,
+      abbreviation: dto.abbreviation,
       description: dto.description,
       date: dto.date,
       sagaId: dto.sagaId,

@@ -79,17 +79,21 @@ export class SagaSingle implements OnInit {
 
   showValidationErrors: boolean = false;
 
-  copyButtonClicked = false;
+  copyButtonClicked: boolean = false;
   date: string = formatDate(Date.now(), "longDate", "en-UK");
 
   selectADateText: string = "Select a date:";
   sagaDatesUi: string[] = [];
+
+  initialising: boolean = false;
+  loading: boolean = false;
 
   //---------------
   //  INIT
   //---------------
 
   ngOnInit() {
+    this.initialising = true;
     const mode = this.route.snapshot.paramMap.get("mode");
 
     //ADD MODE
@@ -123,16 +127,19 @@ export class SagaSingle implements OnInit {
 
   editForm = new FormGroup({
     id: new FormControl<number | null>({ value: null, disabled: true }),
-    title: new FormControl<string>("", {nonNullable: true, validators: [Validators.required, this.sagaTitleUnique()] }),
-    translatedTitle: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
-    pageAuthor: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
-    translated: new FormControl<boolean>(false, {nonNullable: true}),
-    description: new FormControl<string>("", {nonNullable: true}),
+    title: new FormControl<string>("", {
+      nonNullable: true,
+      validators: [Validators.required, this.sagaTitleUnique()],
+    }),
+    translatedTitle: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
+    pageAuthor: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
+    translated: new FormControl<boolean>(false, { nonNullable: true }),
+    description: new FormControl<string>("", { nonNullable: true }),
     sagaVersionForms: new FormArray<FormGroup>([]),
-    bibFilter: new FormControl<string>("", {nonNullable: true}),
-    bibIds: new FormControl<number[]>([], {nonNullable: true}),
+    bibFilter: new FormControl<string>("", { nonNullable: true }),
+    bibIds: new FormControl<number[]>([], { nonNullable: true }),
     msForms: new FormArray<FormGroup>([]),
-    msFilter: new FormControl<string>("", {nonNullable: true}),
+    msFilter: new FormControl<string>("", { nonNullable: true }),
   });
 
   get title(): FormControl<string> {
@@ -190,11 +197,15 @@ export class SagaSingle implements OnInit {
         nonNullable: true,
         validators: [Validators.required, this.sagaVersionTitleUnique()],
       }),
+      abbreviation: new FormControl<string>(sagaVersion ? sagaVersion.abbreviation : "", {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
       date: new FormControl<string>(sagaVersion ? this.mapDateToUi(sagaVersion.date) : this.selectADateText, {
         nonNullable: true,
         validators: this.dateNotSelected(),
       }),
-      description: new FormControl<string>(sagaVersion ? sagaVersion.description : "", {nonNullable: true}),
+      description: new FormControl<string>(sagaVersion ? sagaVersion.description : "", { nonNullable: true }),
     });
   }
 
@@ -217,8 +228,8 @@ export class SagaSingle implements OnInit {
     return new FormGroup({
       trackingId: new FormControl<number>({ value: this.sagaVersionTrackingId++, disabled: true }),
       msId: new FormControl<number | null>({ value: ms.id, disabled: true }),
-      shelfmark: new FormControl<string>({ value: ms.shelfmark, disabled: true }, {nonNullable: true}),
-      date: new FormControl<string>({ value: ms.date, disabled: true }, {nonNullable: true}),
+      shelfmark: new FormControl<string>({ value: ms.shelfmark, disabled: true }, { nonNullable: true }),
+      date: new FormControl<string>({ value: ms.date, disabled: true }, { nonNullable: true }),
       folioNumber: new FormControl<string | null>(
         { value: msInSaga ? msInSaga.folioNumber : null, disabled: !selected },
         Validators.required,
@@ -355,6 +366,7 @@ export class SagaSingle implements OnInit {
     return {
       id: null,
       title: "",
+      abbreviation: "",
       description: "",
       date: SagaDate.UNDEFINED,
       sagaId: 0,
@@ -500,6 +512,7 @@ export class SagaSingle implements OnInit {
     this.mode = Mode.ADD;
     this.sagaEntry = this.initialiseSaga();
     this.showValidationErrors = false;
+    this.loading = false;
     this.addSagaVersionForm();
     this.openAddEditModal();
   }
@@ -507,6 +520,7 @@ export class SagaSingle implements OnInit {
   editSaga() {
     this.mode = Mode.EDIT;
     this.showValidationErrors = false;
+    this.loading = false;
     this.updateBibFilter();
     this.updateMsFilter();
     this.fillInputFields();
@@ -536,8 +550,6 @@ export class SagaSingle implements OnInit {
     }
 
     if (this.editForm.valid) {
-      this.closeAddEditModal();
-
       if (this.mode === Mode.ADD) {
         this.postSaga();
       } else if (this.mode === Mode.EDIT) {
@@ -551,8 +563,10 @@ export class SagaSingle implements OnInit {
   deleteSaga() {
     this.closeDeleteModal();
     if (this.sagaEntry.id) {
+      this.loading = true;
       this.sagasService.deleteSaga(this.sagaEntry.id).subscribe({
         next: (deletedSaga) => {
+          this.loading = false;
           this.router.navigate([`sagas`]);
         },
       });
@@ -609,8 +623,10 @@ export class SagaSingle implements OnInit {
       else sagaVersions[i].id = sagaVersionFormId.getRawValue();
 
       const sagaVersionFormTitle = sagaVersionForm.get("title");
-      if (!sagaVersionFormTitle) sagaVersions[i].title = "";
-      else sagaVersions[i].title = sagaVersionFormTitle.value;
+      if (sagaVersionFormTitle) sagaVersions[i].title = sagaVersionFormTitle.value;
+
+      const sagaVersionFormAbbreviation = sagaVersionForm.get("abbreviation");
+      if (sagaVersionFormAbbreviation) sagaVersions[i].abbreviation = sagaVersionFormAbbreviation.value;
 
       const sagaVersionFormDescription = sagaVersionForm.get("description");
       if (!sagaVersionFormDescription) sagaVersions[i].description = "";
@@ -651,7 +667,7 @@ export class SagaSingle implements OnInit {
       },
       error: (err) => {
         console.log("error fetching bibs: " + JSON.stringify(err.error));
-      }
+      },
     });
   }
 
@@ -684,6 +700,7 @@ export class SagaSingle implements OnInit {
           this.getSagaTitles();
           this.getBibs();
           this.getManuscripts();
+          this.initialising = false;
         },
         error: (err) => {
           console.log("Error fetching saga: " + JSON.stringify(err.error));
@@ -707,9 +724,12 @@ export class SagaSingle implements OnInit {
   //UPDATE
   updateSaga() {
     this.formToVm();
+    this.loading = true;
 
     this.sagasService.putSaga(this.sagaMapper.mapSagaVmToRequestDto(this.sagaEntry)).subscribe({
       next: (receivedSaga) => {
+        this.loading = false;
+        this.closeAddEditModal();
         console.log("Saved successfully! " + receivedSaga);
         this.sagaEntry = this.sagaMapper.mapSagaResponseDtoToVm(receivedSaga);
         this.sagaEntry.manuscripts.sort((a, b) => a.shelfmark.localeCompare(b.shelfmark));
@@ -724,11 +744,15 @@ export class SagaSingle implements OnInit {
   postSaga() {
     this.formToVm();
 
+    this.loading = true;
     this.sagasService.postSaga(this.sagaMapper.mapSagaVmToRequestDto(this.sagaEntry)).subscribe({
       next: (receivedSaga) => {
+        this.closeAddEditModal();
+        this.loading = false;
         this.navigateToSagasSinglePage(receivedSaga.id);
       },
       error: (err: HttpErrorResponse) => {
+        this.loading = false;
         console.log("Problem with posting saga: " + JSON.stringify(err.error));
       },
     });

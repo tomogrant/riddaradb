@@ -659,8 +659,13 @@
           (click)="submitAddOrEdit()"
           type="submit"
           class="btn btn-primary"
-          [disabled]="type.value === defaultPublicationTypeOption">
-          Save
+          [disabled]="type.value === defaultPublicationTypeOption || loading"
+          style="min-width: 70px">
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <div> Submit </div>
+          }
         </button>
       </div>
     </div>

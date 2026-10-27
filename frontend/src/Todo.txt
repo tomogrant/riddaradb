@@ -3,4 +3,17 @@ TODO
 * Complete characters page
 * Complete location page 
 
+* Fix error handling throughout frontend
+* Fix test spy methods (not every spy method needs to call a fake function)
+
 * Make it so that you don't submit an interface directly when submitting a form; experiment with creating a new object
+
+* Consider disabling the submit button so that multiple clicks aren't possible 
+* highlighting splits word
+* Add sex column to character (MALE, FEMALE, N/A, UNKNOWN)
+* Add 'important relationship' asterisk to join table between location and character 
+* Add filtering to saga page
+* Double check italicisation and such for bib page. And add volume field for website 
+* Add saga abbreviations to saga versions
+* Add volume field to website 
+* Fix the ordering of motifs 

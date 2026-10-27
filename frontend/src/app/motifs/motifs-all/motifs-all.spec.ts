@@ -75,6 +75,7 @@ describe("MotifsAll", () => {
         $expandedNodes: signal(new Set<number>()),
         $visibleNodes: signal(new Set<number>()),
         $resultNodes: signal(new Set<number>()),
+        $searchMessage: signal("Message")
       },
     );
   }

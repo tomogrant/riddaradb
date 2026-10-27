@@ -36,7 +36,7 @@ public class MotifImporter implements ApplicationRunner {
         Set<MotifEntity> motifs = new HashSet<>();
         Map<String, MotifEntity> motifMap = new HashMap<>();
 
-        List<BobergMotif> rows = csvReader.readCsv(Path.of("backend/data", "boberg_motifs_filtered.csv"));
+        List<BobergMotif> rows = csvReader.readCsv(Path.of("data", "boberg_motifs_filtered.csv"));
 
         for (BobergMotif row : rows){
             MotifEntity motif = new MotifEntity(null, row.getMotifCode(), row.getMotifName(), row.getDescription());

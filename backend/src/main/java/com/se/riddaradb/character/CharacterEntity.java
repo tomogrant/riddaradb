@@ -1,6 +1,6 @@
 package com.se.riddaradb.character;
 
-import com.se.riddaradb.location.LocationEntity;
+import com.se.riddaradb.location.LocationCharacterEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -14,22 +14,19 @@ public class CharacterEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Integer id;
+    private Integer id;
 
     @NotBlank
-    String name;
+    private String name;
 
     @Enumerated(EnumType.STRING)
-    CharacterEntity.Species species;
+    private Species species;
 
-    public enum Species {
-        HUMAN, GIANT, TROLL, DWARF, ELF, OBJECT
-    }
+    @Enumerated(EnumType.STRING)
+    private Sex sex;
 
-    String realWorldRef;
-
-    @ManyToMany(mappedBy = "characterEntities")
-    Set<LocationEntity> locationEntities = new HashSet<>();
+    @OneToMany(mappedBy = "characterEntity", orphanRemoval = true)
+    private Set<LocationCharacterEntity> locationCharacterEntities = new HashSet<>();
 
     @ManyToMany(mappedBy = "characterEntities")
     Set<SagaVersionEntity> sagaVersionEntities = new HashSet<>();
@@ -37,18 +34,18 @@ public class CharacterEntity {
     protected CharacterEntity() {
     }
 
-    public CharacterEntity(int id, String name, Species species, String realWorldRef) {
+    public CharacterEntity(Integer id, String name, Species species, Sex sex) {
         this.id = id;
         this.name = name;
         this.species = species;
-        this.realWorldRef = realWorldRef;
+        this.sex = sex;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -68,20 +65,20 @@ public class CharacterEntity {
         this.species = species;
     }
 
-    public String getRealWorldRef() {
-        return realWorldRef;
+    public Sex getSex() {
+        return sex;
     }
 
-    public void setRealWorldRef(String realWorldRef) {
-        this.realWorldRef = realWorldRef;
+    public void setSex(Sex sex) {
+        this.sex = sex;
     }
 
-    public Set<LocationEntity> getLocationEntities() {
-        return locationEntities;
+    public Set<LocationCharacterEntity> getLocationCharacterEntities() {
+        return locationCharacterEntities;
     }
 
-    public void setLocationEntities(Set<LocationEntity> locationEntities) {
-        this.locationEntities = locationEntities;
+    public void setLocationCharacterEntities(Set<LocationCharacterEntity> locationCharacterEntities) {
+        this.locationCharacterEntities = locationCharacterEntities;
     }
 
     public Set<SagaVersionEntity> getSagaVersionEntities() {
@@ -91,8 +88,6 @@ public class CharacterEntity {
     public void setSagaVersionEntities(Set<SagaVersionEntity> sagaVersionEntities) {
         this.sagaVersionEntities = sagaVersionEntities;
     }
-
-
 }
 
 

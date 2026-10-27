@@ -7,29 +7,29 @@ import java.util.Set;
 
 public class CharacterDto {
 
-    int id;
+    private Integer id;
 
     @NotBlank
-    String name;
-    CharacterEntity.Species species;
-    String realWorldRef;
-    Set<Integer> locationIds;
-    Set<Integer> SagaVersionIds;
+    private String name;
+    private Species species;
+    private Sex sex;
+    private Set<CharacterLocationDto> characterLocationDtos;
+    private Set<Integer> sagaVersionIds;
 
-    public CharacterDto(int id, String name, CharacterEntity.Species species, String realWorldRef) {
+    public CharacterDto(Integer id, String name, Species species, Sex sex) {
         this.id = id;
         this.name = name;
         this.species = species;
-        this.realWorldRef = realWorldRef;
-        locationIds = new HashSet<>();
-        SagaVersionIds = new HashSet<>();
+        this.sex = sex;
+        characterLocationDtos = new HashSet<>();
+        sagaVersionIds = new HashSet<>();
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -41,35 +41,36 @@ public class CharacterDto {
         this.name = name;
     }
 
-    public CharacterEntity.Species getSpecies() {
+    public Species getSpecies() {
         return species;
     }
 
-    public void setSpecies(CharacterEntity.Species species) {
+    public void setSpecies(Species species) {
         this.species = species;
     }
 
-    public String getRealWorldRef() {
-        return realWorldRef;
+    public Sex getSex() {
+        return sex;
     }
 
-    public void setRealWorldRef(String realWorldRef) {
-        this.realWorldRef = realWorldRef;
+    public void setSex(Sex sex) {
+        this.sex = sex;
     }
 
-    public Set<Integer> getLocationIds() {
-        return locationIds;
+
+    public Set<CharacterLocationDto> getCharacterLocationDtos() {
+        return characterLocationDtos;
     }
 
-    public void setLocationIds(Set<Integer> locationIds) {
-        this.locationIds = locationIds;
+    public void setCharacterLocationDtos(Set<CharacterLocationDto> characterLocationDtos) {
+        this.characterLocationDtos = characterLocationDtos;
     }
 
     public Set<Integer> getSagaVersionIds() {
-        return SagaVersionIds;
+        return sagaVersionIds;
     }
 
-    public void setSagaVersionIds(Set<Integer> SagaVersionIds) {
-        this.SagaVersionIds = SagaVersionIds;
+    public void setSagaVersionIds(Set<Integer> sagaVersionIds) {
+        this.sagaVersionIds = sagaVersionIds;
     }
 }

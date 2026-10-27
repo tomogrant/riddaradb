@@ -6,7 +6,7 @@ import { BibAll } from "./bib/bib-all/bib-all";
 import { BibSingle } from "./bib/bib-single/bib-single";
 import { MotifsAll } from "./motifs/motifs-all/motifs-all";
 import { MsAll } from "./ms/ms-all/ms-all";
-import { MsSingle } from "./ms/ms-slngle/ms-single";
+import { MsSingle } from "./ms/ms-single/ms-single";
 import { Characters } from "./characters/characters";
 import { Locations } from "./locations/locations";
 import { Login } from "./auth/login";

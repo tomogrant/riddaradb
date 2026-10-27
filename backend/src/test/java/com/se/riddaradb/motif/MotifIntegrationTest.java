@@ -3,6 +3,7 @@ package com.se.riddaradb.motif;
 import com.se.riddaradb.saga.SagaRequestDto;
 import com.se.riddaradb.saga.SagaResponseDto;
 import com.se.riddaradb.saga.SagaService;
+import com.se.riddaradb.sagaversion.SagaDate;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import com.se.riddaradb.sagaversion.SagaVersionRequestDto;
 import org.junit.jupiter.api.*;
@@ -198,8 +199,9 @@ public class MotifIntegrationTest {
         return new SagaVersionRequestDto(
                 null,
                 "Title",
+                "Abbrev",
                 "Description",
-                SagaVersionEntity.SagaDate.UNDEFINED);
+                SagaDate.UNDEFINED);
     }
 
     private MotifSagaVersionDto createMotifSagaVersionDto(){

@@ -1,6 +1,6 @@
 package com.se.riddaradb.character;
 
-import com.se.riddaradb.location.LocationEntity;
+import com.se.riddaradb.location.LocationCharacterEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import org.springframework.stereotype.Service;
 
@@ -10,12 +10,14 @@ import java.util.stream.Collectors;
 public class CharacterMapper {
 
     public CharacterDto mapToDto(CharacterEntity characterEntity){
-        CharacterDto characterDto = new CharacterDto(characterEntity.getId(), characterEntity.getName(), characterEntity.getSpecies(), characterEntity.getRealWorldRef());
+        CharacterDto characterDto = new CharacterDto(characterEntity.getId(), characterEntity.getName(), characterEntity.getSpecies(), characterEntity.getSex());
 
-        characterDto.setLocationIds(characterEntity.getLocationEntities()
-                .stream()
-                .map(LocationEntity::getId)
-                .collect(Collectors.toSet()));
+        for (LocationCharacterEntity locationCharacterEntity : characterEntity.getLocationCharacterEntities()){
+            characterDto.getCharacterLocationDtos().add(new CharacterLocationDto(
+                    locationCharacterEntity.getLocationEntity().getId(),
+                    locationCharacterEntity.getSignificantAssociation())
+            );
+        }
 
         characterDto.setSagaVersionIds(characterEntity.getSagaVersionEntities()
                 .stream()
@@ -23,9 +25,5 @@ public class CharacterMapper {
                 .collect(Collectors.toSet()));
 
         return characterDto;
-    }
-
-    public CharacterEntity mapFromDto(CharacterDto characterDto){
-        return new CharacterEntity(characterDto.getId(), characterDto.getName(), characterDto.getSpecies(), characterDto.getRealWorldRef());
     }
 }

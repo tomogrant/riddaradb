@@ -24,6 +24,8 @@ export class SagaAll implements OnInit {
 
   sagas: ISagaTitleDto[] = [];
 
+  initialising: boolean = false;
+
   ngOnInit() {
     this.displaySagas();
   }
@@ -38,8 +40,10 @@ export class SagaAll implements OnInit {
 
   //READ
   displaySagas() {
+    this.initialising = true;
     this.sagaService.getSagaTitles().subscribe({
       next: (receivedSagas) => {
+        this.initialising = false;
         this.sagas = receivedSagas;
 
         this.sagas.sort((a, b) => a.title.localeCompare(b.title));

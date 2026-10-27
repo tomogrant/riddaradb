@@ -7,26 +7,24 @@ import java.util.Set;
 
 public class LocationDto {
 
-    int id;
+    private Integer id;
     @NotBlank
-    String name;
-    LocationEntity.Type type;
-    Set<Integer> characterIds;
-    Set<Integer> SagaVersionIds;
+    private String name;
+    private Set<LocationCharacterDto> locationCharacterDtos;
+    private Set<Integer> sagaVersionIds;
 
-    public LocationDto(int id, String name, LocationEntity.Type type) {
+    public LocationDto(Integer id, String name) {
         this.id = id;
         this.name = name;
-        this.type = type;
-        SagaVersionIds = new HashSet<>();
-        characterIds = new HashSet<>();
+        locationCharacterDtos = new HashSet<>();
+        sagaVersionIds = new HashSet<>();
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -38,27 +36,19 @@ public class LocationDto {
         this.name = name;
     }
 
-    public LocationEntity.Type getType() {
-        return type;
+    public Set<LocationCharacterDto> getLocationCharacterDtos() {
+        return locationCharacterDtos;
     }
 
-    public void setType(LocationEntity.Type type) {
-        this.type = type;
-    }
-
-    public Set<Integer> getCharacterIds() {
-        return characterIds;
-    }
-
-    public void setCharacterIds(Set<Integer> characterIds) {
-        this.characterIds = characterIds;
+    public void setLocationCharacterDtos(Set<LocationCharacterDto> locationCharacterDtos) {
+        this.locationCharacterDtos = locationCharacterDtos;
     }
 
     public Set<Integer> getSagaVersionIds() {
-        return SagaVersionIds;
+        return sagaVersionIds;
     }
 
-    public void setSagaVersionIds(Set<Integer> SagaVersionIds) {
-        this.SagaVersionIds = SagaVersionIds;
+    public void setSagaVersionIds(Set<Integer> sagaVersionIds) {
+        this.sagaVersionIds = sagaVersionIds;
     }
 }

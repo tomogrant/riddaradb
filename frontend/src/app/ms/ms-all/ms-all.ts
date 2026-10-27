@@ -28,7 +28,6 @@ import { AuthService } from "../../auth/auth.service";
   styleUrl: "./ms-all.css",
 })
 export class MsAll {
-
   private router = inject(Router);
   private msService = inject(MsService);
   private authService = inject(AuthService);
@@ -36,10 +35,17 @@ export class MsAll {
   //Forms
   editForm = new FormGroup({
     id: new FormControl<number | null>({ value: null, disabled: true }),
-    name: new FormControl<string>("", {nonNullable: true, validators: [Validators.required, this.repositoryUnique()]}),
-    city: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
-    country: new FormControl<string>("", {nonNullable: true, validators: Validators.required}),
+    name: new FormControl<string>("", {
+      nonNullable: true,
+      validators: [Validators.required, this.repositoryUnique()],
+    }),
+    city: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
+    country: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
   });
+
+  get id(): FormControl<number | null> {
+    return this.editForm.controls.id;
+  }
 
   get name(): FormControl<string> {
     return this.editForm.controls.name;
@@ -146,6 +152,7 @@ export class MsAll {
     this.repositoryDto = this.initialiseRepository();
     const repo = this.repositoriesVmMap.get(id);
     if (repo) {
+      this.id.setValue(repo.id);
       this.name.setValue(repo.name);
       this.city.setValue(repo.city);
       this.country.setValue(repo.country);
@@ -330,13 +337,13 @@ export class MsAll {
           repoToChange.name = repo.name;
           repoToChange.city = repo.city;
           repoToChange.country = repo.country;
-          this.repositoriesVmMap.set(repo.id, repo);
+          this.repositoriesVmMap.set(repoToChange.id, repoToChange);
           this.repositoriesVm.sort((a, b) => a.name.localeCompare(b.name));
           this.updateFilter("");
         }
       },
       error: (err) => {
-        console.log("Problem with saving.");
+        console.log("Problem with saving: " + JSON.stringify(err.error));
       },
     });
   }
@@ -344,8 +351,7 @@ export class MsAll {
   //DELETE
   deleteMsRepository() {
     this.msService.deleteMsRepository(this.repoToDelete).subscribe({
-      next: (repo) => {
-        console.log("Deleted successfully: " + repo);
+      next: () => {
         var repoIndex = this.repositoriesVm.findIndex((repoVm) => repoVm.id == this.repoToDelete);
         console.log("Repo index: " + repoIndex);
         this.repositoriesVm.splice(repoIndex, 1);
@@ -368,7 +374,7 @@ export class MsAll {
       if (!value) {
         return null;
       }
-
+      
       const duplicate = this.repositoriesDto.find(
         (dto) => dto.name.trim().toLowerCase() === value && dto.id !== control.parent?.get("id")?.value,
       );

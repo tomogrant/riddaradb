@@ -43,7 +43,7 @@ export class MotifsAll {
   readonly Mode = Mode;
 
   showValidationErrors: boolean = false;
-
+  initialising: boolean = false;
   $sagas = computed(() => this.motifStore.$sagaTitles());
 
   $editModel = signal<IMotifForm>(this.createNewMotifForm());
@@ -63,13 +63,9 @@ export class MotifsAll {
 
   //SIGNALS
   $rootIds = this.motifStore.$rootIds;
-
   $modalState = computed(() => this.motifModalService.$modalState());
-
   $pinnedNodes = computed(() => this.motifStore.$pinnedNodes());
-
   $searchMessage = computed(() => this.motifStore.$searchMessage());
-
   $showColourCoding = computed(() => this.motifStore.$showColourCoding());
 
   readonly selectedSagaMap = computed(() => {
@@ -97,7 +93,6 @@ export class MotifsAll {
       return null;
     }
 
-    console.log("Test: " + this.motifStore.getMotifNode(1)?.motifName);
     return this.motifStore.getMotifNode(state.motifId);
   });
 
@@ -106,7 +101,9 @@ export class MotifsAll {
   }
 
   async initialise() {
+    this.initialising = true;
     await this.motifStore.initialise();
+    this.initialising = false;
 
     const searchTerm = this.route.snapshot.paramMap.get("searchterm");
     if (!searchTerm) return;
@@ -198,6 +195,7 @@ export class MotifsAll {
   }
 
   clearPinnedNodes() {
+    this.closeClearPinboardModal();
     this.motifStore.clearPinnedNodes();
   }
 
@@ -236,6 +234,28 @@ export class MotifsAll {
       var modal = Modal.getOrCreateInstance(templateModal);
       if (modal != null) {
         modal.toggle();
+      }
+    }
+  }
+
+  openClearPinboardModal() {
+    const clearPinboardModal = document.getElementById("pinboardModal");
+
+    if (clearPinboardModal != null) {
+      var modal = Modal.getOrCreateInstance(clearPinboardModal);
+      if (modal != null) {
+        modal.show();
+      }
+    }
+  }
+
+    closeClearPinboardModal() {
+    const clearPinboardModal = document.getElementById("pinboardModal");
+
+    if (clearPinboardModal != null) {
+      var modal = Modal.getOrCreateInstance(clearPinboardModal);
+      if (modal != null) {
+        modal.show();
       }
     }
   }
