@@ -1,8 +1,8 @@
 package com.se.riddaradb.sagaversion;
 
 import com.se.riddaradb.character.CharacterEntity;
-import com.se.riddaradb.motif.MotifEntity;
 import com.se.riddaradb.location.LocationEntity;
+import com.se.riddaradb.motif.MotifEntity;
 import com.se.riddaradb.saga.SagaEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -73,6 +73,26 @@ public class SagaVersionEntity {
     public void removeMotif(MotifEntity motifEntity){
         getSagaVersionMotifEntities().removeIf(sagaMotif -> Objects.equals(sagaMotif.getMotifEntity().getId(), motifEntity.getId()));
         motifEntity.getSagaVersionMotifEntities().removeIf(sagaMotif -> Objects.equals(sagaMotif.getSagaVersionEntity().getId(), getId()));
+    }
+
+    public void addLocation(LocationEntity locationEntity){
+        locationEntities.add(locationEntity);
+        locationEntity.getSagaVersionEntities().add(this);
+    }
+
+    public void removeLocation(LocationEntity locationEntity){
+        getLocationEntities().remove(locationEntity);
+        locationEntity.getSagaVersionEntities().remove(this);
+    }
+
+    public void addCharacter(CharacterEntity characterEntity){
+        characterEntities.add(characterEntity);
+        characterEntity.getSagaVersionEntities().add(this);
+    }
+
+    public void removeCharacter(CharacterEntity characterEntity){
+        getCharacterEntities().remove(characterEntity);
+        characterEntity.getSagaVersionEntities().remove(this);
     }
 
     public Integer getId() {

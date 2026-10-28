@@ -1,7 +1,6 @@
 package com.se.riddaradb.bib;
 
 import com.se.riddaradb.saga.SagaEntity;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 
@@ -53,7 +52,7 @@ public class BibEntity {
     private String description;
 
     @ManyToMany(mappedBy = "bibEntities")
-    private Set<SagaEntity> sagaEntity = new HashSet<>();
+    private Set<SagaEntity> sagaEntities = new HashSet<>();
 
     public BibEntity(){
     }
@@ -253,11 +252,11 @@ public class BibEntity {
         this.description = description;
     }
 
-    public Set<SagaEntity> getSagaEntity() {
-        return sagaEntity;
+    public Set<SagaEntity> getSagaEntities() {
+        return sagaEntities;
     }
 
-    public void setSagaEntity(Set<SagaEntity> sagaEntity) {
-        this.sagaEntity = sagaEntity;
+    public void setSagaEntities(Set<SagaEntity> sagaEntities) {
+        this.sagaEntities = sagaEntities;
     }
 }

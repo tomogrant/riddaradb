@@ -10,11 +10,18 @@ import java.util.stream.Collectors;
 public class CharacterMapper {
 
     public CharacterDto mapToDto(CharacterEntity characterEntity){
-        CharacterDto characterDto = new CharacterDto(characterEntity.getId(), characterEntity.getName(), characterEntity.getSpecies(), characterEntity.getSex());
+        CharacterDto characterDto = new CharacterDto(
+                characterEntity.getId(),
+                characterEntity.getName(),
+                characterEntity.getSpecies(),
+                characterEntity.getSex(),
+                characterEntity.getNotes()
+        );
 
         for (LocationCharacterEntity locationCharacterEntity : characterEntity.getLocationCharacterEntities()){
             characterDto.getCharacterLocationDtos().add(new CharacterLocationDto(
                     locationCharacterEntity.getLocationEntity().getId(),
+                    locationCharacterEntity.getLocationEntity().getName(),
                     locationCharacterEntity.getSignificantAssociation())
             );
         }

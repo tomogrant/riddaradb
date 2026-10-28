@@ -4,11 +4,13 @@ public class SagaVersionTitleDto {
     private Integer id;
     private Integer sagaId;
     private String title;
+    private String abbreviation;
 
-    public SagaVersionTitleDto(int id, int sagaId, String title) {
+    public SagaVersionTitleDto(int id, int sagaId, String title, String abbreviation) {
         this.id = id;
         this.sagaId = sagaId;
         this.title = title;
+        this.abbreviation = abbreviation;
     }
 
     public Integer getId() {
@@ -33,5 +35,13 @@ public class SagaVersionTitleDto {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public String getAbbreviation() {
+        return abbreviation;
+    }
+
+    public void setAbbreviation(String abbreviation) {
+        this.abbreviation = abbreviation;
     }
 }

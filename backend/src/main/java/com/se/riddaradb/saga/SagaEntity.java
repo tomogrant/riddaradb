@@ -68,7 +68,12 @@ public class SagaEntity {
 
     public void addBib(BibEntity bib){
         bibEntities.add(bib);
-        bib.getSagaEntity().add(this);
+        bib.getSagaEntities().add(this);
+    }
+
+    public void removeBib(BibEntity bib){
+        bibEntities.remove(bib);
+        bib.getSagaEntities().remove(this);
     }
 
     public void addMs(MsEntity msEntity, String folioNumber, String note){

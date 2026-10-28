@@ -16,14 +16,16 @@ public class CharacterDto {
     private Species species;
     @NotNull
     private Sex sex;
+    private String notes;
     private Set<CharacterLocationDto> characterLocationDtos;
     private Set<Integer> sagaVersionIds;
 
-    public CharacterDto(Integer id, String name, Species species, Sex sex) {
+    public CharacterDto(Integer id, String name, Species species, Sex sex, String notes) {
         this.id = id;
         this.name = name;
         this.species = species;
         this.sex = sex;
+        this.notes = notes;
         characterLocationDtos = new HashSet<>();
         sagaVersionIds = new HashSet<>();
     }
@@ -60,6 +62,13 @@ public class CharacterDto {
         this.sex = sex;
     }
 
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
+    }
 
     public Set<CharacterLocationDto> getCharacterLocationDtos() {
         return characterLocationDtos;

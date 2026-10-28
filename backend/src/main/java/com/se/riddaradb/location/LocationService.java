@@ -2,11 +2,11 @@ package com.se.riddaradb.location;
 
 import com.se.riddaradb.character.CharacterRepository;
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
+import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import com.se.riddaradb.sagaversion.SagaVersionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -21,7 +21,11 @@ public class LocationService {
     final LocationMapper locationMapper;
     final LocationCharacterRepository locationCharacterRepository;
 
-    public LocationService(LocationRepository locationRepository, SagaVersionRepository sagaVersionRepository, CharacterRepository characterRepository, LocationMapper locationMapper, LocationCharacterRepository locationCharacterRepository) {
+    public LocationService(LocationRepository locationRepository,
+                           SagaVersionRepository sagaVersionRepository,
+                           CharacterRepository characterRepository,
+                           LocationMapper locationMapper,
+                           LocationCharacterRepository locationCharacterRepository) {
         this.locationRepository = locationRepository;
         this.sagaVersionRepository = sagaVersionRepository;
         this.characterRepository = characterRepository;
@@ -50,13 +54,20 @@ public class LocationService {
         LocationEntity locationEntity = new LocationEntity();
 
         locationEntity.setName(locationDto.getName());
+        locationEntity.setTranslation(locationDto.getTranslation());
+        locationEntity.setContinent(locationDto.getContinent());
+        locationEntity.setNotes(locationDto.getNotes());
 
         //Character entries
         for (LocationCharacterDto locationCharacterDto : locationDto.getLocationCharacterDtos()){
-            characterRepository.findById(locationCharacterDto.getCharacterId()).ifPresent(characterEntity -> locationEntity.addCharacter(characterEntity, locationCharacterDto.getSignificantAssociation()));
+            characterRepository.findById(locationCharacterDto.getCharacterId()).ifPresent(characterEntity ->
+                    locationEntity.addCharacter(characterEntity, locationCharacterDto.getSignificantAssociation()));
         }
 
-        locationEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(locationDto.getSagaVersionIds())));
+        for (Integer id : locationDto.getSagaVersionIds()){
+            sagaVersionRepository.findById(id).ifPresent(sagaVersion -> sagaVersion.addLocation(locationEntity));
+        }
+
         return locationMapper.mapToDto(locationRepository.save(locationEntity));
     }
 
@@ -66,13 +77,19 @@ public class LocationService {
                 new ResourceNotFoundException("Location entity not found in database"));
 
         locationEntity.setName(locationDto.getName());
+        locationEntity.setTranslation(locationDto.getTranslation());
+        locationEntity.setContinent(locationDto.getContinent());
+        locationEntity.setNotes(locationDto.getNotes());
 
-        updateCharacter(locationEntity, locationDto);
+        updateCharacters(locationEntity, locationDto);
+        updateSagaVersions(locationEntity, locationDto);
+
 
         return locationMapper.mapToDto(locationRepository.save(locationEntity));
     }
 
-    void updateCharacter(LocationEntity locationEntity, LocationDto locationDto){
+
+    void updateCharacters(LocationEntity locationEntity, LocationDto locationDto){
 
         //Map of location-character join entities already associated with this location. Indexed by character ID.
         Map<Integer, LocationCharacterEntity> currentLocationCharacters = locationEntity.getLocationCharacterEntities()
@@ -111,9 +128,31 @@ public class LocationService {
         });
     }
 
+    private void updateSagaVersions(LocationEntity locationEntity, LocationDto locationDto){
+
+        Set<Integer> newIds = locationDto.getSagaVersionIds();
+
+        for (SagaVersionEntity sagaVersionEntity : locationEntity.getSagaVersionEntities()){
+            if (!newIds.contains(sagaVersionEntity.getId())){
+                sagaVersionEntity.removeLocation(locationEntity);
+            }
+        }
+
+        for (Integer sagaVersionId : newIds){
+            sagaVersionRepository.findById(sagaVersionId).ifPresent(sagaVersion ->
+                    sagaVersion.addLocation(locationEntity));
+        }
+    }
+
     public void deleteLocationEntryById(int id) {
 
         locationRepository.deleteById(id);
+    }
+
+    private void removeLocationFromSagaVersions(int id){
+        for (SagaVersionEntity sagaVersionEntity : sagaVersionRepository.findAll()){
+            sagaVersionEntity.getLocationEntities().removeIf(loc -> loc.getId() == id);
+        }
     }
 
 }

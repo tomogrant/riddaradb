@@ -31,11 +31,11 @@ public class BibController {
 
     @PutMapping("/bibentries/putbibentry")
     BibDto putBibEntry(@RequestBody @Valid BibDto bibDto){
-        return bibService.saveBibEntry(bibDto);
+        return bibService.updateBibEntry(bibDto);
     }
 
     @DeleteMapping("/bibentries/deletebibentry/{id}")
-    void deleteSaga(@PathVariable int id){
+    void deleteBib(@PathVariable int id){
         bibService.deleteBibEntryById(id);
     }
 }

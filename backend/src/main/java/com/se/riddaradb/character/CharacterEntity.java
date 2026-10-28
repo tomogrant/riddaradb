@@ -28,6 +28,8 @@ public class CharacterEntity {
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
+    private String notes;
+
     @OneToMany(mappedBy = "characterEntity", orphanRemoval = true)
     private Set<LocationCharacterEntity> locationCharacterEntities = new HashSet<>();
 
@@ -37,11 +39,12 @@ public class CharacterEntity {
     protected CharacterEntity() {
     }
 
-    public CharacterEntity(Integer id, String name, Species species, Sex sex) {
+    public CharacterEntity(Integer id, String name, Species species, Sex sex, String notes) {
         this.id = id;
         this.name = name;
         this.species = species;
         this.sex = sex;
+        this.notes = notes;
     }
 
     public Integer getId() {
@@ -74,6 +77,14 @@ public class CharacterEntity {
 
     public void setSex(Sex sex) {
         this.sex = sex;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public void setNotes(String notes) {
+        this.notes = notes;
     }
 
     public Set<LocationCharacterEntity> getLocationCharacterEntities() {

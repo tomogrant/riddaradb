@@ -15,34 +15,20 @@
           </tr>
         </thead>
         <tbody>
-          <tr>
-            <th scope="row">Tyrkland</th>
-            <td>'Turkland'</td>
-            <td>Asia</td>
-            <td><i>Ectors saga</i></td>
-            <td>Ector</td>
-            <td>A poorly defined region which encompasses Asia Minor and the Eurasian steppe.</td>
-          </tr>
-          <tr>
-            <th scope="row">Ertinborg</th>
-            <td>Ertheneburg</td>
-            <td>Europe</td>
-            <td><i>Bærings saga</i></td>
-            <td>Bæringr</td>
-            <td
-              >A now-ruined castle on the northern (Schleswig-Holstein) bank of the Elbe. The modern town of Artlenburg,
-              whose name is derived from that of the old castle, stands on the opposite (Lower Saxony) side of the
-              Elbe.</td
-            >
-          </tr>
-          <tr>
-            <th scope="row">Bláland</th>
-            <td>'Blackland'</td>
-            <td>Africa</td>
-            <td><i>Klári saga</i></td>
-            <td>Klárus</td>
-            <td>An imprecise term for the parts of Africa bordering the Mediterranean and Red Sea. </td>
-          </tr>
+          @for (location of locations; track $index) {
+            <tr>
+              <th scope="row">{{ location.name }}</th>
+              <td>{{ location.translation }}</td>
+              <td>{{ location.continent }}</td>
+              <td>@for (sagaVersionId of location.sagaVersionIds; track $index){
+                <span><i>{{sagaVersionTitleMap.get(sagaVersionId)?.title}}</i></span>
+                }</td>
+              <td>@for(locationCharacterDto of location.locationCharacterDtos; track $index){
+                <span>{{locationCharacterDto.characterName}}</span>
+                }</td>
+              <td>{{ location.notes }}</td>
+            </tr>
+          }
         </tbody>
       </table>
     </div>

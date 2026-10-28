@@ -3,13 +3,11 @@ package com.se.riddaradb.bib;
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.saga.SagaEntity;
 import com.se.riddaradb.saga.SagaRepository;
-import jakarta.persistence.EntityNotFoundException;
-import org.hibernate.ObjectNotFoundException;
-import org.springframework.orm.jpa.JpaObjectRetrievalFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.Set;
 
 @Service
 @Transactional
@@ -40,37 +38,33 @@ public class BibService {
 
     public BibDto saveBibEntry(BibDto bibDto){
 
-        //This is the most beautiful code I've ever written.
-        //Removes bib entity from sagas
-        if (bibDto.getId() != null){
-            if (bibRepository.existsById(bibDto.getId())){
-                removeBibFromSagaVersions(bibDto.getId());
-            }
+        BibEntity bibEntity = bibMapper.mapFromDto(bibDto);
+
+        for (Integer sagaId : bibDto.getSagaIds()){
+            sagaRepository.findById(sagaId).ifPresent(saga -> saga.addBib(bibEntity));
         }
 
-        BibEntity bibEntity;
+        return bibMapper.mapToDto(bibRepository.save(bibEntity));
+    }
+    public BibDto updateBibEntry(BibDto bibDto){
 
-        //Creates bib entity
-        if (bibDto.getId() == null){
-            bibEntity = bibMapper.mapFromDto(bibDto);
-        }
-        else{
-            bibEntity = bibRepository.findById(bibDto.getId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Bibliography entry not found in database"));
-            bibMapper.updateBibEntity(bibEntity, bibDto);
-        }
+        BibEntity bibEntity = bibRepository.findById(bibDto.getId()).orElseThrow(() ->
+                new ResourceNotFoundException("Bibliography entry not found in DB"));
 
-        //Add bib entry to sagas
-        for (int id : bibDto.getSagaIds()){
-            sagaRepository.findById(id).ifPresent(saga -> saga.addBib(bibEntity));
-        }
+        updateBibEntity(bibEntity, bibDto);
+        updateSagas(bibEntity, bibDto);
 
         return bibMapper.mapToDto(bibRepository.save(bibEntity));
     }
 
     public void deleteBibEntryById(int id){
 
-        removeBibFromSagaVersions(id);
+        bibRepository.findById(id).ifPresent(bibEntity -> {
+            for (SagaEntity sagaEntity : bibEntity.getSagaEntities()){
+                sagaEntity.removeBib(bibEntity);
+            }
+        });
+
         bibRepository.deleteById(id);
     }
 
@@ -78,9 +72,38 @@ public class BibService {
         bibRepository.deleteAll();
     }
 
-    private void removeBibFromSagaVersions(int id){
-        for (SagaEntity saga : sagaRepository.findAll()){
-            saga.getBibEntities().removeIf(bib -> bib.getId() == id);
+    private void updateBibEntity(BibEntity bibEntity, BibDto bibDto){
+        bibEntity.setPublicationType(bibDto.getPublicationType());
+        bibEntity.setAuthors(bibDto.getAuthors());
+        bibEntity.setEditors(bibDto.getEditors());
+        bibEntity.setTranslators(bibDto.getTranslators());
+        bibEntity.setTitle(bibDto.getTitle());
+        bibEntity.setUrl(bibDto.getUrl());
+        bibEntity.setBookEditors(bibDto.getBookEditors());
+        bibEntity.setBook(bibDto.getBook());
+        bibEntity.setBookSeries(bibDto.getBookSeries());
+        bibEntity.setVolume(bibDto.getVolume());
+        bibEntity.setNumOfVolumes(bibDto.getNumOfVolumes());
+        bibEntity.setPublisher(bibDto.getPublisher());
+        bibEntity.setPublicationYear(bibDto.getPublicationYear());
+        bibEntity.setPageNumbers(bibDto.getPageNumbers());
+        bibEntity.setRecommended(bibDto.getRecommended());
+        bibEntity.setDescription(bibDto.getDescription());
+    }
+
+    private void updateSagas(BibEntity bibEntity, BibDto bibDto){
+
+        Set<Integer> newIds = bibDto.getSagaIds();
+
+        for (SagaEntity sagaEntity : bibEntity.getSagaEntities()){
+            if (!newIds.contains(sagaEntity.getId())){
+                sagaEntity.removeBib(bibEntity);
+            }
+        }
+
+        for (Integer sagaId : newIds){
+            sagaRepository.findById(sagaId).ifPresent(saga ->
+                    saga.addBib(bibEntity));
         }
     }
 }

@@ -1,15 +1,13 @@
 package com.se.riddaradb.ms;
 
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
-import com.se.riddaradb.motif.MotifSagaVersionDto;
-import com.se.riddaradb.saga.*;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
-import com.se.riddaradb.sagaversion.SagaVersionRepository;
+import com.se.riddaradb.saga.SagaMsEntity;
+import com.se.riddaradb.saga.SagaMsRepository;
+import com.se.riddaradb.saga.SagaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -121,9 +119,7 @@ public class MsService {
         //from saga if it is not listed in the 'new MS-saga IDs' set.
         sagaMsRepository.findByMsEntityId(msDto.getId()).forEach(sagaMs -> {
             if (!newMsSagaIds.contains(sagaMs.getSagaEntity().getId())){
-                sagaRepository.findById(sagaMs.getSagaEntity().getId()).ifPresent(saga ->
-                        saga.removeMs(msRepository.findById(sagaMs.getMsEntity().getId())
-                                .orElseThrow(() -> new ResourceNotFoundException("Manuscript entity not found in database"))));
+                sagaMs.getSagaEntity().removeMs(msEntity);
             }
         });
     }

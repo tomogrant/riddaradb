@@ -145,7 +145,7 @@ public class MotifService {
         //If set of IDs does not include sagas previously associated with this motif, remove them
         sagaVersionMotifRepository.findByMotifEntityId(motifDto.getId()).forEach(sagaMotif -> {
             if (!newSagaMotifIds.contains(sagaMotif.getSagaVersionEntity().getId())){
-                sagaVersionRepository.findById(sagaMotif.getSagaVersionEntity().getId()).ifPresent(sagaVersion -> sagaVersion.removeMotif(motifEntity));
+                sagaMotif.getSagaVersionEntity().removeMotif(motifEntity);
             }
         });
     }

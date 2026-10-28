@@ -2,6 +2,7 @@ package com.se.riddaradb.character;
 
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
 import com.se.riddaradb.location.*;
+import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import com.se.riddaradb.sagaversion.SagaVersionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,14 +54,11 @@ public class CharacterService {
         characterEntity.setName(characterDto.getName());
         characterEntity.setSpecies(characterDto.getSpecies());
         characterEntity.setSex(characterDto.getSex());
+        characterEntity.setNotes(characterDto.getNotes());
 
-        //Locations
-        for (CharacterLocationDto characterLocationDto : characterDto.getCharacterLocationDtos()){
-            locationRepository.findById(characterLocationDto.getLocationId()).ifPresent(locationEntity ->
-                    locationEntity.addCharacter(characterEntity, characterLocationDto.getSignificantAssociation()));
-        }
+        updateLocations(characterEntity, characterDto);
+        updateSagaVersions(characterEntity, characterDto);
 
-        characterEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(characterDto.getSagaVersionIds())));
         return characterMapper.mapToDto(characterRepository.save(characterEntity));
     }
 
@@ -72,14 +70,16 @@ public class CharacterService {
         characterEntity.setName(characterDto.getName());
         characterEntity.setSpecies(characterDto.getSpecies());
         characterEntity.setSex(characterDto.getSex());
+        characterEntity.setNotes(characterDto.getNotes());
         characterEntity.setSagaVersionEntities(new HashSet<>(sagaVersionRepository.findAllById(characterDto.getSagaVersionIds())));
 
-        updateLocation(characterEntity, characterDto);
+        updateLocations(characterEntity, characterDto);
+        updateSagaVersions(characterEntity, characterDto);
 
         return characterMapper.mapToDto(characterRepository.save(characterEntity));
     }
 
-    void updateLocation(CharacterEntity characterEntity, CharacterDto characterDto) {
+    private void updateLocations(CharacterEntity characterEntity, CharacterDto characterDto) {
 
         //Map of location-character join entities already associated with this character. Indexed by location ID.
         Map<Integer, LocationCharacterEntity> currentLocationCharacters = characterEntity.getLocationCharacterEntities()
@@ -113,15 +113,29 @@ public class CharacterService {
         // this character, remove them.
         locationCharacterRepository.findByCharacterEntityId(characterDto.getId()).forEach(locationCharacter -> {
             if (!newCharacterLocationIds.contains(locationCharacter.getLocationEntity().getId())) {
-                locationRepository.findById(locationCharacter.getLocationEntity().getId()).ifPresent(locationEntity
-                        -> locationEntity.removeCharacter(characterEntity)
-                );
+                locationCharacter.getLocationEntity().removeCharacter(characterEntity);
             }
         });
     }
 
+    private void updateSagaVersions(CharacterEntity characterEntity, CharacterDto characterDto){
+
+        Set<Integer> newIds = characterDto.getSagaVersionIds();
+
+        for (SagaVersionEntity sagaVersionEntity : characterEntity.getSagaVersionEntities()){
+            if (!newIds.contains(sagaVersionEntity.getId())){
+                sagaVersionEntity.removeCharacter(characterEntity);
+            }
+        }
+
+        for (Integer sagaVersionId : newIds){
+            sagaVersionRepository.findById(sagaVersionId).ifPresent(sagaVersion ->
+                    sagaVersion.addCharacter(characterEntity));
+        }
+    }
+
     public void deleteCharacterEntryById(int id) {
-        locationRepository.deleteById(id);
+        characterRepository.deleteById(id);
     }
 }
 
