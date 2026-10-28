@@ -1,0 +1,412 @@
+import { FormGroup, FormControl, FormGroupName, FormArray, ReactiveFormsModule, Validators } from "@angular/forms";
+import { Component, computed, inject } from "@angular/core";
+import { Modal } from "bootstrap";
+import { RouterModule, Router, ActivatedRoute } from "@angular/router";
+import { MsService } from "../common/ms.service";
+import { CommonModule } from "@angular/common";
+import { IMs } from "../common/IMs";
+import { Mode } from "../../shared/Enums";
+import { IMsRepositoryDto } from "../common/IMsRepositoryDto";
+import { SagaService } from "../../sagas/common/saga.service";
+import { ISagaTitleDto } from "../../sagas/common/ISagaTitleDto";
+import { QuillModule } from "ngx-quill";
+import { IMsSaga } from "../common/IMsSaga";
+import { ValidatorFn, AbstractControl, ValidationErrors } from "@angular/forms";
+import { Title } from "@angular/platform-browser";
+import { PageHeader } from "../../page-header/page-header";
+import { AuthService } from "../../auth/auth.service";
+
+@Component({
+  selector: "app-ms-single",
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, QuillModule, PageHeader],
+  templateUrl: "./ms-single.html",
+  styleUrl: "./ms-single.css",
+})
+export class MsSingle {
+
+    private router = inject(Router);
+    private route = inject(ActivatedRoute);
+    private msService = inject(MsService);
+    private sagaService = inject(SagaService);
+    private title = inject(Title);
+    private authService = inject(AuthService);
+
+  //Forms
+  editForm = new FormGroup({
+    id: new FormControl<number | null>({ value: null, disabled: true }),
+    name: new FormControl<string>("", {nonNullable: true}),
+    shelfmark: new FormControl<string>("", {nonNullable: true, validators: [Validators.required, this.shelfmarkUnique()]}),
+    date: new FormControl<string>("", {nonNullable: true, validators: [Validators.required, Validators.pattern(/^\d{4}(?:-\d{4})?$/)]}),
+    entryLink: new FormControl<string>("", {nonNullable: true}),
+    description: new FormControl<string>("", {nonNullable: true}),
+    msSagas: new FormArray<FormGroup>([]),
+  });
+
+  get id(): FormControl<number | null> {
+    return this.editForm.controls.id;
+  }
+
+  get name(): FormControl<string> {
+    return this.editForm.controls.name;
+  }
+
+  get shelfmark(): FormControl<string> {
+    return this.editForm.controls.shelfmark;
+  }
+
+  get date(): FormControl<string> {
+    return this.editForm.controls.date;
+  }
+
+  get entryLink(): FormControl<string> {
+    return this.editForm.controls.entryLink;
+  }
+
+  get description(): FormControl<string> {
+    return this.editForm.controls.description;
+  }
+
+  get msSagas(): FormArray<FormGroup> {
+    return this.editForm.controls.msSagas;
+  }
+
+  showValidationErrors: boolean = false;
+
+  sagas: ISagaTitleDto[] = [];
+  activeMs: IMs = this.initialiseMs();
+  manuscriptsInRepo: IMs[] = [];
+  repo: IMsRepositoryDto = this.initialiseRepository();
+
+  readonly Mode = Mode;
+  mode: Mode = Mode.NONE;
+
+  $loggedIn = computed(() => this.authService.$loggedIn());
+  $isAdmin = computed(() => this.authService.$isAdmin());
+
+  index: number = 0;
+
+  ngOnInit() {
+    this.setup();
+  }
+
+  setup() {
+    const mode = this.route.snapshot.paramMap.get("mode");
+    const repoId = this.route.snapshot.paramMap.get("repoid");
+    this.activeMs.msRepositoryId = Number(repoId);
+
+    const idParam = this.route.snapshot.paramMap.get("id");
+    const id = this.parameterValid(idParam);
+
+    //ADD MODE
+    if (mode == "add") {
+      this.getSagas();
+      this.getRepo();
+      this.addMs();
+    } else if (id) {
+      this.msService.getMsEntryById(id).subscribe({
+        next: (receivedEntry) => {
+          this.activeMs = receivedEntry;
+          this.title.setTitle("riddaraDB - " + this.activeMs.shelfmark);
+          this.getSagas();
+          this.getRepo();
+        },
+        error: err => {
+          console.log("Error getting MS: " + JSON.stringify(err.error));
+          this.navigateToMsAllPage();
+        }
+      });
+    } else {
+      console.log("parameter is incorrect");
+      this.navigateToMsAllPage();
+    }
+  }
+
+    parameterValid(param: string | null): number | null {
+    if (param !== null && /^\d+$/.test(param) && Number.isSafeInteger(Number(param)) && Number(param) > 0) {
+      return Number(param);
+    } else {
+      return null;
+    }
+  }
+
+  initialiseSagaMsForms() {
+    this.msSagas.clear();
+
+    this.sagas.forEach((saga) => {
+      var msSaga = this.activeMs.msSagaDtos.find((msSagaInMs) => msSagaInMs.sagaId == saga.id);
+      this.msSagas.push(this.createSagaMsFormGroup(saga, msSaga));
+    });
+  }
+
+  createSagaMsFormGroup(saga: ISagaTitleDto, msSaga?: IMsSaga): FormGroup {
+    const selected = !!msSaga;
+
+    const sagaForm = new FormGroup({
+      trackingId: new FormControl(this.index++),
+      sagaId: new FormControl(saga.id),
+      sagaTitle: new FormControl(saga.title),
+      folioNumber: new FormControl<string | null>(
+        {
+          value: msSaga?.folioNumber ?? null,
+          disabled: !selected,
+        },
+        Validators.required,
+      ),
+      note: new FormControl<string | null>({
+        value: msSaga?.note ?? null,
+        disabled: !selected,
+      }),
+      selected: new FormControl<boolean>(selected),
+    });
+
+    this.configureFolioNumberState(sagaForm);
+
+    return sagaForm;
+  }
+
+  //When the checkbox is checked, makes folio number field available;
+  //when unchecked, field is disabled and contents are set to null
+  configureFolioNumberState(form: FormGroup) {
+    form.get("selected")!.valueChanges.subscribe((selected) => {
+      const folioNumber = form.get("folioNumber");
+      const note = form.get("note");
+
+      if (folioNumber) {
+        if (selected) {
+          folioNumber.enable();
+        } else {
+          folioNumber.disable();
+          folioNumber.setValue(null);
+        }
+      }
+      if (note) {
+        if (selected) {
+          note.enable();
+        } else {
+          note.disable();
+          note.setValue(null);
+        }
+      }
+    });
+  }
+
+  setMsSagaTitles() {
+    this.activeMs.msSagaDtos.forEach((dto) => {
+      const saga = this.sagas.find((saga) => dto.sagaId == saga.id);
+      if (saga) dto.sagaTitle = saga.title;
+    });
+  }
+
+  editMs() {
+    this.mode = Mode.EDIT;
+    this.showValidationErrors = false;
+
+    this.id.setValue(this.activeMs.id);
+    this.name.setValue(this.activeMs.name ?? "");
+    this.shelfmark.setValue(this.activeMs.shelfmark);
+    this.date.setValue(this.activeMs.date);
+    this.entryLink.setValue(this.activeMs.entryLink ?? "");
+    this.description.setValue(this.activeMs.description ?? "");
+
+    this.openAddEditModal();
+  }
+
+  addMs() {
+    this.mode = Mode.ADD;
+    this.showValidationErrors = false;
+
+    //Form is already initialised, so no need to reset values here
+    this.openAddEditModal();
+  }
+
+  submitAddOrEdit() {
+    this.shelfmark.updateValueAndValidity();
+    this.date.updateValueAndValidity();
+    this.entryLink.updateValueAndValidity();
+
+    const formValue = this.editForm.getRawValue();
+
+    const payload = {
+      id: formValue.id,
+      name: String(formValue.name).trim(),
+      shelfmark: String(formValue.shelfmark!).trim(),
+      date: String(formValue.date).trim(),
+      entryLink: String(formValue.entryLink)?.trim(),
+      description: formValue.description
+        ? formValue.description.replaceAll(/((?:&nbsp;)*)&nbsp;/g, "$1 ").trim()
+        : null,
+      msSagaDtos: formValue.msSagas
+        .filter((saga) => saga["selected"])
+        .map((saga) => ({
+          sagaId: saga["sagaId"],
+          folioNumber: String(saga["folioNumber"]).trim(),
+          note: saga["note"] == null ? null : String(saga["note"]).trim(),
+        })),
+      msRepositoryId: this.activeMs.msRepositoryId,
+    };
+
+    if (this.editForm.valid) {
+      if (this.mode === Mode.ADD) {
+        this.postMs(payload);
+      } else if (this.mode === Mode.EDIT) {
+        this.updateMs(payload);
+      }
+    } else {
+      this.showValidationErrors = true;
+    }
+  }
+
+  getSagas() {
+    this.sagaService.getSagaTitles().subscribe((sagas) => {
+      this.sagas = [];
+      sagas.forEach((saga) => this.sagas.push(saga));
+      this.sagas.sort((a, b) => a.title.localeCompare(b.title));
+
+      this.setMsSagaTitles();
+      this.activeMs.msSagaDtos.sort((a, b) =>
+        a.folioNumber?.localeCompare(b.folioNumber, undefined, { numeric: true }),
+      );
+
+      this.initialiseSagaMsForms();
+    });
+  }
+
+  getRepo() {
+    this.msService.getMsRepositoryById(this.activeMs.msRepositoryId).subscribe((repo) => {
+      this.repo = repo;
+
+      if (this.repo.id) {
+        this.msService.getMsEntriesByRepoId(this.repo?.id).subscribe((msEntries) => {
+          this.manuscriptsInRepo = msEntries;
+        });
+      }
+    });
+  }
+
+  navigateToMsAllPage() {
+    this.closeAddEditModal();
+    this.router.navigate([`ms`]);
+  }
+
+  navigateToMsEntryPage(id: number) {
+    this.closeAddEditModal();
+    this.router.navigate([`ms/${id}`]);
+  }
+
+  openAddEditModal() {
+    var editAddModal = document.getElementById("addEditMs");
+    if (editAddModal != null) {
+      var modal = Modal.getOrCreateInstance(editAddModal);
+      modal?.show();
+    }
+  }
+
+  closeAddEditModal() {
+    var editAddModal = document.getElementById("addEditMs");
+    if (editAddModal != null) {
+      var modal = Modal.getInstance(editAddModal);
+      modal?.hide();
+    }
+  }
+
+  openDeleteModal() {
+    var deleteModal = document.getElementById("deleteMs");
+    if (deleteModal != null) {
+      var modal = Modal.getOrCreateInstance(deleteModal);
+      modal?.show();
+    }
+  }
+
+  closeDeleteModal() {
+    var deleteModal = document.getElementById("deleteMs");
+    if (deleteModal != null) {
+      var modal = Modal.getInstance(deleteModal);
+      modal?.hide();
+    }
+  }
+
+  postMs(payload: IMs) {
+    this.msService.postMs(payload).subscribe({
+      next: (ms) => {
+        this.activeMs = ms;
+        this.setMsSagaTitles();
+        this.activeMs.msSagaDtos.sort((a, b) =>
+          a.folioNumber?.localeCompare(b.folioNumber, undefined, { numeric: true }),
+        );
+        if (this.activeMs.id) {
+          this.navigateToMsEntryPage(this.activeMs.id);
+        }
+      },
+      error: (err) => {
+        "Post MS failed";
+      },
+    });
+  }
+
+  updateMs(payload: IMs) {
+    this.msService.putMs(payload).subscribe({
+      next: (ms) => {
+        this.activeMs = ms;
+        this.setMsSagaTitles();
+        this.activeMs.msSagaDtos.sort((a, b) =>
+          a.folioNumber?.localeCompare(b.folioNumber, undefined, { numeric: true }),
+        );
+        this.closeAddEditModal();
+      },
+      error: (err) => {
+        "Update MS failed";
+      },
+    });
+  }
+
+  deleteMs() {
+    this.closeDeleteModal();
+
+    if (this.activeMs.id) {
+      this.msService.deleteMs(this.activeMs.id).subscribe({
+        next: () => this.navigateToMsAllPage(),
+        error: (err) => console.log("problem with deleting"),
+      });
+    }
+  }
+
+  initialiseMs(): IMs {
+    return {
+      id: null,
+      name: "",
+      shelfmark: "",
+      date: "",
+      description: "",
+      msSagaDtos: [],
+      msRepositoryId: 0,
+    };
+  }
+
+  initialiseRepository() {
+    return {
+      id: null,
+      name: "",
+      city: "",
+      country: "",
+      msIds: [],
+    };
+  }
+
+  shelfmarkUnique(): ValidatorFn {
+    return (control: AbstractControl): ValidationErrors | null => {
+      const value = String(control.value ?? "")
+        .trim()
+        .toLowerCase();
+
+      if (!value) {
+        return null;
+      }
+
+      const duplicate = this.manuscriptsInRepo.find(
+        (ms) => ms.shelfmark.trim().toLowerCase() === value && ms.id !== control.parent?.get("id")?.value,
+      );
+
+      return duplicate ? { shelfmarkNotUnique: true } : null;
+    };
+  }
+}

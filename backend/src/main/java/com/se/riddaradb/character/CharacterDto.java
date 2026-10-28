@@ -1,6 +1,7 @@
 package com.se.riddaradb.character;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -11,7 +12,9 @@ public class CharacterDto {
 
     @NotBlank
     private String name;
+    @NotNull
     private Species species;
+    @NotNull
     private Sex sex;
     private Set<CharacterLocationDto> characterLocationDtos;
     private Set<Integer> sagaVersionIds;

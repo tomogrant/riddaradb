@@ -4,6 +4,7 @@ import com.se.riddaradb.location.LocationCharacterEntity;
 import com.se.riddaradb.sagaversion.SagaVersionEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -19,9 +20,11 @@ public class CharacterEntity {
     @NotBlank
     private String name;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private Species species;
 
+    @NotNull
     @Enumerated(EnumType.STRING)
     private Sex sex;
 
