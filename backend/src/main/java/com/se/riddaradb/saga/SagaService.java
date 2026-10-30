@@ -86,6 +86,7 @@ public class SagaService {
         sagaEntity.setPageAuthor(sagaRequestDto.getPageAuthor());
         sagaEntity.setDescription(sagaRequestDto.getDescription());
         sagaEntity.setTranslated(sagaRequestDto.getTranslated());
+        sagaEntity.setPublished(sagaRequestDto.getPublished());
 
         updateSagaVersions(sagaEntity, sagaRequestDto);
 
@@ -104,7 +105,9 @@ public class SagaService {
                 sagaRequestDto.getTranslatedTitle(),
                 sagaRequestDto.getPageAuthor(),
                 sagaRequestDto.getDescription(),
-                sagaRequestDto.getTranslated());
+                sagaRequestDto.getTranslated(),
+                sagaRequestDto.getPublished()
+        );
 
         // This is actually optimal for objects which are not created in the saga menu,
         // as you're just linking the saga to objects which already exist via ID. The only
@@ -176,9 +179,9 @@ public class SagaService {
             }
         }
 
-        for (int currentSagaVersionId : currentSagaVersions) {
-            if (!newSagaVersions.contains(currentSagaVersionId)) {
-                sagaEntity.removeSagaVersion(currentSagaVersionId);
+        for (SagaVersionEntity sagaVersionEntity : sagaEntity.getSagaVersionEntities()) {
+            if (!newSagaVersions.contains(sagaVersionEntity.getId())) {
+                sagaEntity.removeSagaVersion(sagaVersionEntity);
             }
         }
     }
@@ -271,28 +274,21 @@ public class SagaService {
 
     public void deleteSagaById(int id) {
 
-        if (sagaRepository.findById(id).isPresent()){
-            SagaEntity sagaEntity = sagaRepository.findById(id).get();
-            for (SagaVersionEntity sagaVersionEntity : sagaEntity.getSagaVersionEntities()){
-                sagaVersionService.deleteSagaVersionById(sagaVersionEntity.getId());
+        sagaRepository.findById(id).ifPresent(sagaEntity -> {
+            for (SagaVersionEntity sagaVersionEntity : new HashSet<>(sagaEntity.getSagaVersionEntities())){
+                sagaVersionEntity.detachAllEntities();
+                sagaEntity.removeSagaVersion(sagaVersionEntity);
             }
 
-            removeSagaFromBibEntries(id);
+            for(BibEntity bibEntity : new HashSet<>(sagaEntity.getBibEntities())){
+                sagaEntity.removeBib(bibEntity);
+            }
 
-            sagaRepository.deleteById(id);
-        }
-        else {
-            throw new ResourceNotFoundException("Saga not found in database");
-        }
+            sagaRepository.delete(sagaEntity);
+        });
     }
 
     public void deleteAll(){
         sagaRepository.deleteAll();
-    }
-
-    private void removeSagaFromBibEntries(int id){
-        for (SagaEntity saga : sagaRepository.findAll()) {
-            saga.getBibEntities().removeIf(bib -> bib.getId() == id);
-        }
     }
 }

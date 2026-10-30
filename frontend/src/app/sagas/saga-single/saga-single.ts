@@ -86,7 +86,8 @@ export class SagaSingle implements OnInit {
   sagaDatesUi: string[] = [];
 
   initialising: boolean = false;
-  loading: boolean = false;
+  saveAsDraftLoading: boolean = false;
+  publishLoading: boolean = false;
 
   //---------------
   //  INIT
@@ -134,6 +135,7 @@ export class SagaSingle implements OnInit {
     translatedTitle: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
     pageAuthor: new FormControl<string>("", { nonNullable: true, validators: Validators.required }),
     translated: new FormControl<boolean>(false, { nonNullable: true }),
+    published: new FormControl<boolean>(false, { nonNullable: true }),
     description: new FormControl<string>("", { nonNullable: true }),
     sagaVersionForms: new FormArray<FormGroup>([]),
     bibFilter: new FormControl<string>("", { nonNullable: true }),
@@ -156,6 +158,10 @@ export class SagaSingle implements OnInit {
 
   get translated(): FormControl<boolean> {
     return this.editForm.controls.translated;
+  }
+
+  get published(): FormControl<boolean> {
+    return this.editForm.controls.published;
   }
 
   get description(): FormControl<string> {
@@ -354,6 +360,7 @@ export class SagaSingle implements OnInit {
       pageAuthor: "",
       description: "",
       translated: false,
+      published: false,
       sagaVersions: [],
       bibIds: [],
       primarySources: [],
@@ -465,6 +472,7 @@ export class SagaSingle implements OnInit {
       pageAuthor: this.sagaEntry.pageAuthor,
       description: this.sagaEntry.description,
       translated: this.sagaEntry.translated,
+      published: this.sagaEntry.published,
       bibIds: [...this.sagaEntry.bibIds],
     });
 
@@ -485,6 +493,10 @@ export class SagaSingle implements OnInit {
   //---------------
   //  USER CHOICE
   //---------------
+
+  togglePublished() {
+    this.published.setValue(!this.published.value);
+  }
 
   addSagaVersionForm() {
     this.sagaVersionForms.push(this.createSagaVersionForm());
@@ -512,7 +524,8 @@ export class SagaSingle implements OnInit {
     this.mode = Mode.ADD;
     this.sagaEntry = this.initialiseSaga();
     this.showValidationErrors = false;
-    this.loading = false;
+    this.saveAsDraftLoading = false;
+    this.publishLoading = false;
     this.addSagaVersionForm();
     this.openAddEditModal();
   }
@@ -520,7 +533,8 @@ export class SagaSingle implements OnInit {
   editSaga() {
     this.mode = Mode.EDIT;
     this.showValidationErrors = false;
-    this.loading = false;
+    this.saveAsDraftLoading = false;
+    this.publishLoading = false;
     this.updateBibFilter();
     this.updateMsFilter();
     this.fillInputFields();
@@ -563,11 +577,12 @@ export class SagaSingle implements OnInit {
   deleteSaga() {
     this.closeDeleteModal();
     if (this.sagaEntry.id) {
-      this.loading = true;
       this.sagasService.deleteSaga(this.sagaEntry.id).subscribe({
-        next: (deletedSaga) => {
-          this.loading = false;
+        next: () => {
           this.router.navigate([`sagas`]);
+        },
+        error: (err) => {
+          console.log("Error deleting saga: " + JSON.stringify(err));
         },
       });
     }
@@ -590,13 +605,11 @@ export class SagaSingle implements OnInit {
 
     this.sagaEntry.translated = this.translated.value;
 
+    this.sagaEntry.published = this.published.value;
+
     this.sagaEntry.bibIds = [...this.bibIds.value];
 
     const msFormsRaw = this.msForms.getRawValue();
-
-    msFormsRaw.forEach((msForm) => {
-      console.log("Form selected: " + msForm["selected"]);
-    });
 
     this.sagaEntry.manuscripts = msFormsRaw
       .filter((ms) => ms["selected"])
@@ -695,12 +708,17 @@ export class SagaSingle implements OnInit {
       //If saga id is valid, get saga
       this.sagasService.getSagaById(id).subscribe({
         next: (receivedEntry) => {
-          this.sagaEntry = this.sagaMapper.mapSagaResponseDtoToVm(receivedEntry);
-          this.pageTitle.setTitle("riddaraDB - " + this.sagaEntry.title);
-          this.getSagaTitles();
-          this.getBibs();
-          this.getManuscripts();
-          this.initialising = false;
+          if (this.$loggedIn() || receivedEntry.published) {
+            this.sagaEntry = this.sagaMapper.mapSagaResponseDtoToVm(receivedEntry);
+            this.pageTitle.setTitle("riddaraDB - " + this.sagaEntry.title);
+            this.getSagaTitles();
+            this.getBibs();
+            this.getManuscripts();
+            this.initialising = false;
+          } else {
+            console.log("User is not authorised to visit this saga page");
+            this.navigateToSagasAllPage();
+          }
         },
         error: (err) => {
           console.log("Error fetching saga: " + JSON.stringify(err.error));
@@ -724,17 +742,21 @@ export class SagaSingle implements OnInit {
   //UPDATE
   updateSaga() {
     this.formToVm();
-    this.loading = true;
+    this.sagaEntry.published ? (this.publishLoading = true) : (this.saveAsDraftLoading = true);
 
     this.sagasService.putSaga(this.sagaMapper.mapSagaVmToRequestDto(this.sagaEntry)).subscribe({
       next: (receivedSaga) => {
-        this.loading = false;
+        this.saveAsDraftLoading = false;
+        this.publishLoading = false;
         this.closeAddEditModal();
         console.log("Saved successfully! " + receivedSaga);
         this.sagaEntry = this.sagaMapper.mapSagaResponseDtoToVm(receivedSaga);
         this.sagaEntry.manuscripts.sort((a, b) => a.shelfmark.localeCompare(b.shelfmark));
       },
       error: (err) => {
+        this.saveAsDraftLoading = false;
+        this.publishLoading = false;
+        this.closeAddEditModal();
         console.log("Problem with saving: " + JSON.stringify(err.error));
       },
     });
@@ -744,15 +766,17 @@ export class SagaSingle implements OnInit {
   postSaga() {
     this.formToVm();
 
-    this.loading = true;
+    this.sagaEntry.published ? (this.publishLoading = true) : (this.saveAsDraftLoading = true);
     this.sagasService.postSaga(this.sagaMapper.mapSagaVmToRequestDto(this.sagaEntry)).subscribe({
       next: (receivedSaga) => {
-        this.closeAddEditModal();
-        this.loading = false;
+        this.saveAsDraftLoading = false;
+        this.publishLoading = false;
         this.navigateToSagasSinglePage(receivedSaga.id);
       },
       error: (err: HttpErrorResponse) => {
-        this.loading = false;
+        this.closeAddEditModal();
+        this.saveAsDraftLoading = false;
+        this.publishLoading = false;
         console.log("Problem with posting saga: " + JSON.stringify(err.error));
       },
     });

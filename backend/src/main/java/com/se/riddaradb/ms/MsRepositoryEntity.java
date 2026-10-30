@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
+@Table(name="ms_repository")
 public class MsRepositoryEntity {
 
     @Id
@@ -22,12 +23,16 @@ public class MsRepositoryEntity {
     @NotBlank
     private String country;
 
-    @OneToMany(mappedBy = "msRepositoryEntity", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "msRepositoryEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MsEntity> msEntities = new HashSet<>();
 
     public void addMs(MsEntity msEntity){
         this.msEntities.add(msEntity);
         msEntity.setMsRepositoryEntity(this);
+    }
+
+    public void removeMs(MsEntity msEntity){
+        this.msEntities.remove(msEntity);
     }
 
     public Integer getId() {

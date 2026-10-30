@@ -81,6 +81,7 @@ public class SecurityConfig {
         final String msRepoPattern = "/msrepository/**";
         final String characterPattern = "/characters/**";
         final String locationPattern = "/locations/**";
+        final String textPattern = "/text/**";
 
         httpSecurity
                 //Enable CORS settings as defined in the CorsConfigurationSource bean
@@ -188,6 +189,16 @@ public class SecurityConfig {
                                 auth.requestMatchers(HttpMethod.GET, locationPattern).permitAll();
                             }
                             auth.requestMatchers(locationPattern).authenticated();
+
+                            //Text
+                            //----
+                            if(locked){
+                                auth.requestMatchers(HttpMethod.GET, textPattern).authenticated();
+                            }
+                            else{
+                                auth.requestMatchers(HttpMethod.GET, textPattern).permitAll();
+                            }
+                            auth.requestMatchers(textPattern).hasRole("ADMINISTRATOR");
                         })
 
                 //Maximum number of sessions

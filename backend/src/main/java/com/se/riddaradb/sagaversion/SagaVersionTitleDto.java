@@ -3,12 +3,14 @@ package com.se.riddaradb.sagaversion;
 public class SagaVersionTitleDto {
     private Integer id;
     private Integer sagaId;
+    private Boolean published;
     private String title;
     private String abbreviation;
 
-    public SagaVersionTitleDto(int id, int sagaId, String title, String abbreviation) {
+    public SagaVersionTitleDto(Integer id, Integer sagaId, Boolean published, String title, String abbreviation) {
         this.id = id;
         this.sagaId = sagaId;
+        this.published = published;
         this.title = title;
         this.abbreviation = abbreviation;
     }
@@ -27,6 +29,14 @@ public class SagaVersionTitleDto {
 
     public void setSagaId(Integer sagaId) {
         this.sagaId = sagaId;
+    }
+
+    public Boolean getPublished() {
+        return published;
+    }
+
+    public void setPublished(Boolean published) {
+        this.published = published;
     }
 
     public String getTitle() {

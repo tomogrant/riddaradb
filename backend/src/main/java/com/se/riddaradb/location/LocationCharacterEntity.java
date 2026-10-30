@@ -4,6 +4,7 @@ import com.se.riddaradb.character.CharacterEntity;
 import jakarta.persistence.*;
 
 @Entity
+@Table(name="location_character")
 public class LocationCharacterEntity {
 
     @EmbeddedId

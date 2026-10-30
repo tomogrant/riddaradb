@@ -24,7 +24,9 @@ public class SagaMapper {
                 sagaEntity.getTranslatedTitle(),
                 sagaEntity.getPageAuthor(),
                 sagaEntity.getDescription(),
-                sagaEntity.getTranslated());
+                sagaEntity.getTranslated(),
+                sagaEntity.getPublished()
+        );
 
         //Set saga versions
         sagaResponseDto.setSagaVersions(sagaEntity.getSagaVersionEntities()
@@ -54,6 +56,6 @@ public class SagaMapper {
     }
 
     public SagaTitleDto mapToSagaTitle(SagaEntity sagaEntity){
-        return new SagaTitleDto(sagaEntity.getId(), sagaEntity.getTitle());
+        return new SagaTitleDto(sagaEntity.getId(), sagaEntity.getTitle(), sagaEntity.getPublished());
     }
 }

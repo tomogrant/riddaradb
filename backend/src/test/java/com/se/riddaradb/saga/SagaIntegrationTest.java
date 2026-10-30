@@ -102,6 +102,7 @@ public class SagaIntegrationTest {
                 "New translated title",
                 "Page author",
                 "New description",
+                false,
                 false
         );
 
@@ -240,7 +241,9 @@ public class SagaIntegrationTest {
                 "Translated title",
                 "Page author",
                 "Description",
-                false);
+                false,
+                false
+        );
     }
 
     private SagaVersionRequestDto createSagaVersionRequestDto() {

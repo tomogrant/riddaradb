@@ -32,6 +32,8 @@ public class SagaEntity {
 
     private Boolean translated;
 
+    private Boolean published;
+
     @OneToMany(mappedBy = "sagaEntity", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<SagaVersionEntity> sagaVersionEntities = new HashSet<>();
 
@@ -47,13 +49,21 @@ public class SagaEntity {
     public SagaEntity(){
     }
 
-    public SagaEntity(Integer id, String title, String translatedTitle, String pageAuthor, String description, Boolean translated) {
+    public SagaEntity(
+            Integer id,
+            String title,
+            String translatedTitle,
+            String pageAuthor,
+            String description,
+            Boolean translated,
+            Boolean published) {
         this.id = id;
         this.title = title;
         this.translatedTitle = translatedTitle;
         this.pageAuthor = pageAuthor;
         this.description = description;
         this.translated = translated;
+        this.published = published;
     }
 
 
@@ -62,8 +72,8 @@ public class SagaEntity {
         sagaVersion.setSagaEntity(this);
     }
 
-    public void removeSagaVersion(int id){
-        getSagaVersionEntities().removeIf(existingSagaVersionEntity -> existingSagaVersionEntity.getId() == id);
+    public void removeSagaVersion(SagaVersionEntity sagaVersionEntity){
+        sagaVersionEntities.remove(sagaVersionEntity);
     }
 
     public void addBib(BibEntity bib){
@@ -134,6 +144,14 @@ public class SagaEntity {
 
     public void setTranslated(Boolean translated) {
         this.translated = translated;
+    }
+
+    public Boolean getPublished() {
+        return published;
+    }
+
+    public void setPublished(Boolean published) {
+        this.published = published;
     }
 
     public Set<SagaVersionEntity> getSagaVersionEntities() {

@@ -256,7 +256,9 @@ public class MsIntegrationTest {
                 "Translated title",
                 "Page author",
                 "Description",
-                false);
+                false,
+                false
+        );
     }
 
     private SagaVersionRequestDto createSagaVersionRequestDto() {

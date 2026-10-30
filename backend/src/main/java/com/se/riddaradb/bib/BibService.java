@@ -37,7 +37,6 @@ public class BibService {
     }
 
     public BibDto saveBibEntry(BibDto bibDto){
-
         BibEntity bibEntity = bibMapper.mapFromDto(bibDto);
 
         for (Integer sagaId : bibDto.getSagaIds()){
@@ -63,9 +62,9 @@ public class BibService {
             for (SagaEntity sagaEntity : bibEntity.getSagaEntities()){
                 sagaEntity.removeBib(bibEntity);
             }
-        });
 
-        bibRepository.deleteById(id);
+            bibRepository.delete(bibEntity);
+        });
     }
 
     public void deleteAll(){

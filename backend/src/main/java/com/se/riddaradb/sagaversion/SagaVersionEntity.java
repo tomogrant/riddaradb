@@ -13,7 +13,7 @@ import java.util.Objects;
 import java.util.Set;
 
 @Entity
-@Table(name = "sagaversion")
+@Table(name = "saga_version")
 public class SagaVersionEntity {
 
     @Id
@@ -32,8 +32,9 @@ public class SagaVersionEntity {
     @NotNull
     private SagaDate date;
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="sagaId")
+    @JoinColumn(name="sagaId", nullable = false)
     private SagaEntity sagaEntity;
 
     @OneToMany(mappedBy = "sagaVersionEntity", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -61,6 +62,20 @@ public class SagaVersionEntity {
         this.abbreviation = abbreviation;
         this.description = description;
         this.date = date;
+    }
+
+    public void detachAllEntities(){
+        for (SagaVersionMotifEntity sagaVersionMotifEntity : new HashSet<>(sagaVersionMotifEntities)){
+            removeMotif(sagaVersionMotifEntity.getMotifEntity());
+        }
+
+        for (LocationEntity locationEntity : new HashSet<>(locationEntities)){
+            removeLocation(locationEntity);
+        }
+
+        for (CharacterEntity characterEntity : new HashSet<>(characterEntities)){
+            removeCharacter(characterEntity);
+        }
     }
 
     public void addMotif(MotifEntity motifEntity, String pageChapterNumber, Boolean inBoberg){

@@ -223,7 +223,12 @@ export class BibSingle {
       sagas.forEach((saga) => this.sagas.push(saga));
       this.sagas.sort((a, b) => a.title.localeCompare(b.title));
 
-      this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id));
+      if (this.$loggedIn()){
+        this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id));
+      }
+      else {
+        this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id) && saga.published);
+      }
     });
   }
 

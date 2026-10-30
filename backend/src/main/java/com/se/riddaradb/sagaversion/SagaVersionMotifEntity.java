@@ -3,10 +3,8 @@ package com.se.riddaradb.sagaversion;
 import com.se.riddaradb.motif.MotifEntity;
 import jakarta.persistence.*;
 
-import java.util.Objects;
-
 @Entity
-@Table(name="sagaversionmotif")
+@Table(name="sagaversion-motif")
 public class SagaVersionMotifEntity {
 
     @EmbeddedId

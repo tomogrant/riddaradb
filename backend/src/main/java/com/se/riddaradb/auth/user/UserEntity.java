@@ -3,12 +3,11 @@ package com.se.riddaradb.auth.user;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
-import jakarta.validation.constraints.NotNull;
 
 import java.util.Set;
 
 @Entity
-@Table(name = "userentity")
+@Table(name = "riddaradb_user")
 public class UserEntity {
 
     @Id

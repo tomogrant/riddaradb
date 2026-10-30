@@ -8,7 +8,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name = "bib")
+@Table(name = "bibliography_entry")
 public class BibEntity {
 
     @Id

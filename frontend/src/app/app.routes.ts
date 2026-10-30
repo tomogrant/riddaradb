@@ -1,5 +1,5 @@
 import { CanActivateFn, Router, Routes } from "@angular/router";
-import { Home } from "./home/home";
+import { Home } from "./landing/home/home";
 import { SagaAll } from "./sagas/saga-all/saga-all";
 import { SagaSingle } from "./sagas/saga-single/saga-single";
 import { BibAll } from "./bib/bib-all/bib-all";
@@ -10,7 +10,7 @@ import { MsSingle } from "./ms/ms-single/ms-single";
 import { Characters } from "./characters/characters";
 import { Locations } from "./locations/locations";
 import { Login } from "./auth/login";
-import { About } from "./about/about";
+import { About } from "./landing/about/about";
 import { Admin } from "./admin/admin";
 import { inject } from "@angular/core";
 import { AuthService } from "./auth/auth.service";

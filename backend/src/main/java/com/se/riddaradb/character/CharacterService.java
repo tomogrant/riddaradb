@@ -135,8 +135,18 @@ public class CharacterService {
     }
 
     public void deleteCharacterEntryById(int id) {
-        characterRepository.deleteById(id);
+
+        //Remove character from locations and saga versions before deletion
+        characterRepository.findById(id).ifPresent(characterEntity -> {
+            for (LocationCharacterEntity locationCharacterEntity : new HashSet<>(characterEntity.getLocationCharacterEntities())){
+                locationCharacterEntity.getLocationEntity().removeCharacter(characterEntity);
+            }
+
+            characterEntity.getSagaVersionEntities().forEach(sagaVersionEntity -> {
+                sagaVersionEntity.removeCharacter(characterEntity);
+            });
+
+            characterRepository.delete(characterEntity);
+        });
     }
 }
-
-

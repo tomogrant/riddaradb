@@ -9,6 +9,7 @@ export interface ISagaRequestDto {
   pageAuthor: string;
   description: string;
   translated: boolean;
+  published: boolean;
   sagaVersions: ISagaVersionRequestDto[];
   bibIds: number[];
   sagaMsDtos: ISagaMs[];

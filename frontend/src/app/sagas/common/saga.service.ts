@@ -62,7 +62,8 @@ export class SagaService {
   //DELETE SAGA BY ID
   deleteSaga(id: number): Observable<null> {
     console.log("request sent: " + `${this.sagasMain}/deletesaga/${id}`);
-    return this.httpClient.delete<null>(`${this.sagasMain}/deletesaga/${id}`);
+    return this.httpClient.delete<null>(`${this.sagasMain}/deletesaga/${id}`).pipe(
+      catchError(this.errorHandler));
   }
 
   //SAGA VERSIONS

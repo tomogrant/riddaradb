@@ -4,6 +4,9 @@
   } @else {
     <i>{{ sagaEntry.title }}</i> (<i>{{ sagaEntry.translatedTitle }}</i
     >)
+    @if (!sagaEntry.published) {
+      <span style="font-variant: small-caps;">[draft]</span>
+    }
   }
 </app-page-header>
 
@@ -97,7 +100,7 @@
                   @if (sagaMotif.pageChapterNumber !== "") {
                     <span>{{ sagaMotif.pageChapterNumber }}.</span>
                   }
-                  @if (sagaMotif.inBoberg) {
+                  @if (!sagaMotif.inBoberg) {
                     <span class="red">*</span>
                   }
                 </a>
@@ -703,14 +706,26 @@
         </button>
         <button
           data-testid="save-button"
-          [disabled]="loading"
-          (click)="submitAddOrEdit()"
+          [disabled]="saveAsDraftLoading || publishLoading"
+          (click)="published.setValue(false); submitAddOrEdit()"
           type="submit"
           class="btn btn-primary spinner-button">
-          @if (loading) {
+          @if (saveAsDraftLoading) {
             <div class="spinner-border spinner-border-sm" role="status"> </div>
           } @else {
-            <div> Submit </div>
+            <div> Save as draft</div>
+          }
+        </button>
+        <button
+          data-testid="publish-button"
+          [disabled]="publishLoading || saveAsDraftLoading"
+          (click)="published.setValue(true); submitAddOrEdit()"
+          type="submit"
+          class="btn btn-success spinner-button">
+          @if (publishLoading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <div>Publish</div>
           }
         </button>
       </div>
@@ -743,14 +758,9 @@
         <button
           data-testid="delete-confirm-button"
           (click)="deleteSaga()"
-          [disabled]="loading"
           type="submit"
-          class="btn btn-danger spinner-button">
-          @if (loading) {
-            <div class="spinner-border spinner-border-sm" role="status"> </div>
-          } @else {
-            Delete
-          }
+          class="btn btn-danger">
+          Delete
         </button>
       </div>
     </div>

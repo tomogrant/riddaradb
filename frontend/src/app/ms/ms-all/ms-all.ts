@@ -17,7 +17,6 @@ import { IMsRepositoryVm } from "../common/IMsRepositoryVm";
 import { Mode } from "../../shared/Enums";
 import { IMsRepositoryDto } from "../common/IMsRepositoryDto";
 import { debounceTime, distinctUntilChanged } from "rxjs";
-import { RouterTestingHarness } from "@angular/router/testing";
 import { PageHeader } from "../../page-header/page-header";
 import { AuthService } from "../../auth/auth.service";
 
@@ -266,7 +265,6 @@ export class MsAll {
     this.country.updateValueAndValidity();
 
     if (this.editForm.valid) {
-      this.closeAddEditModal();
 
       this.repositoryDto.name = this.name.value;
       this.repositoryDto.city = this.city.value;
@@ -286,7 +284,8 @@ export class MsAll {
   postMsRepository() {
     this.msService.postMsRepository(this.repositoryDto).subscribe({
       next: (repo) => {
-        console.log("Saved successfully! " + repo);
+        this.closeAddEditModal();
+        console.log("Saved successfully: " + repo);
         if (!repo.id) return;
         //Add new repo to collection and repo map
         var repoVm: IMsRepositoryVm = {
@@ -304,7 +303,8 @@ export class MsAll {
         this.updateFilter("");
       },
       error: (err) => {
-        console.log("Problem with saving.");
+        this.closeAddEditModal();
+        console.log("Problem with saving: " + JSON.stringify(err));
       },
     });
   }

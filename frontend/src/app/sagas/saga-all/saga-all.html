@@ -8,15 +8,17 @@
       <div class="spinner-border spinner-border-lg" role="status"> </div>
     } @else {
       @for (saga of sagas; track saga.id) {
-        <div class="row">
-          <div class="col-2 ms-3">
-            <h4>
-              <i>
-                <a [routerLink]="['/sagas', saga.id]">{{ saga.title }}</a>
-              </i>
-            </h4>
+        @if ($loggedIn() || saga.published) {
+          <div class="row">
+            <div class="col-auto ms-3">
+              <h4>
+                <i>
+                  <a [routerLink]="['/sagas', saga.id]">{{ saga.title }}</a>
+                </i>
+              </h4>
+            </div>
           </div>
-        </div>
+        }
       }
     }
 

@@ -176,7 +176,7 @@ public class MotifService {
             motifRepository.deleteById(id);
         }
         else{
-            throw(new AccessDeniedException("Unathorised for motif deletion request"));
+            throw(new AccessDeniedException("Unauthorised for motif deletion request"));
         }
     }
 
@@ -187,9 +187,13 @@ public class MotifService {
     private void removeChildren(int id){
         motifRepository.findById(id).ifPresent(motif -> {
             motif.getChildren().forEach((child -> removeChildren(child.getId())));
-        });
 
-        motifRepository.deleteById(id);
+            for (SagaVersionMotifEntity sagaVersionMotifEntity : new HashSet<>(motif.getSagaVersionMotifEntities())){
+                sagaVersionMotifEntity.getSagaVersionEntity().removeMotif(motif);
+            };
+
+            motifRepository.delete(motif);
+        });
     }
 
     Set<MotifSearchResult> search(String searchTerm){
@@ -206,6 +210,12 @@ public class MotifService {
                 -> motifIds.add(motif.getId()));
 
         sagaVersionRepository.findByTitleContainsIgnoreCase(searchTerm).forEach(sagaVersion ->{
+            sagaVersion.getSagaVersionMotifEntities().forEach(sagaMotif -> {
+                motifIds.add(sagaMotif.getMotifEntity().getId());
+            });
+        });
+
+        sagaVersionRepository.findByAbbreviationContainsIgnoreCase(searchTerm).forEach(sagaVersion ->{
             sagaVersion.getSagaVersionMotifEntities().forEach(sagaMotif -> {
                 motifIds.add(sagaMotif.getMotifEntity().getId());
             });

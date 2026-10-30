@@ -1,12 +1,13 @@
 package com.se.riddaradb.ms;
 
 import com.se.riddaradb.exceptions.ResourceNotFoundException;
+import com.se.riddaradb.saga.SagaMsEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
-import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -73,10 +74,18 @@ public class MsRepositoryService {
 
         //Admins can delete all MS repositories. Regular users can only delete them if they're empty.
         if (isAdmin || msRepositoryEntity.getMsEntities().isEmpty()){
-            msRepositoryRepository.deleteById(id);
+
+            for (MsEntity msEntity : new HashSet<>(msRepositoryEntity.getMsEntities())){
+                for (SagaMsEntity sagaMsEntity : new HashSet<>(msEntity.getSagaMsEntities())){
+                    sagaMsEntity.getSagaEntity().removeMs(msEntity);
+                }
+                msRepositoryEntity.removeMs(msEntity);
+            }
+
+            msRepositoryRepository.delete(msRepositoryEntity);
         }
         else {
-            throw new AccessDeniedException("Unathorised MS repo deletion request");
+            throw new AccessDeniedException("Unauthorised MS repo deletion request");
         }
 
     }

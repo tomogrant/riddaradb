@@ -30,15 +30,18 @@
         <div class="col" [innerHTML]="activeMs.description"></div>
       </div>
 
-      @if (activeMs.msSagaDtos.length) {
+      @if (attachedSagas.length) {
         <h3 style="font-variant: small-caps"><i>Riddarasögur</i></h3>
 
-        @for (saga of activeMs.msSagaDtos; track $index) {
+        @for (saga of attachedSagas; track $index) {
           <div class="row">
             <div class="col">
               <a [routerLink]="['/sagas', saga.sagaId]">
                 {{ saga.folioNumber }}:
                 <i>{{ saga.sagaTitle }}</i>
+                @if (!saga.published){
+                  <span style="font-variant: small-caps;"> [draft]</span>
+                }
                 @if (saga.note) {
                   ({{ saga.note }})
                 }

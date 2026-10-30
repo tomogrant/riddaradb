@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -125,7 +126,15 @@ public class MsService {
     }
 
     public void deleteMsEntryById(int id){
-        msRepository.deleteById(id);
+        msRepository.findById(id).ifPresent(ms ->
+        {
+            ms.getMsRepositoryEntity().removeMs(ms);
+            for (SagaMsEntity sagaMsEntity : new HashSet<>(ms.getSagaMsEntities())){
+                sagaMsEntity.getSagaEntity().removeMs(ms);
+            }
+
+            msRepository.delete(ms);
+        });
     }
 
     public void deleteAll(){

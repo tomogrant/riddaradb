@@ -42,3 +42,4 @@ testem.log
 .DS_Store
 Thumbs.db
 src/Todo.txt
+backend/schema-for-drawio.sql

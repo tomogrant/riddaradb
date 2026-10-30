@@ -1,0 +1,69 @@
+<app-page-header backgroundImg="vignette.jpg"> About </app-page-header>
+
+<div class="card-body page-container">
+  @if ($isAdmin()) {
+    <div class="row mb-3">
+      <div class="col">
+        <button (click)="openEditModal()" type="button" class="btn btn-secondary">Edit</button>
+      </div>
+    </div>
+  }
+
+  <div class="row">
+    <div class="col">
+      <div [innerHTML]="aboutText.text"></div>
+    </div>
+  </div>
+</div>
+
+<!--Edit modal-->
+<div
+  class="modal fade"
+  id="editText"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Edit 'About' text</h1>
+        <button (click)="closeEditModal()" type="button" class="btn-close" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm">
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col">
+                <quill-editor
+                  class="quill-editor"
+                  formControlName="text"
+                  id="saga-description"
+                  placeholder="'About' text"
+                  [modules]="{
+                    toolbar: [
+                      [{ 'header': 1 }, { 'header': 2 }], 
+                      ['bold', 'italic', 'underline'],
+                      [{ list: 'ordered' }, { list: 'bullet' }],
+                      [{ script: 'sub' }, { script: 'super' }],
+                      [{ 'align': [] }],
+                      ['link', 'image', 'video']  
+                    ],
+                  }"></quill-editor>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- END OF FIELDS -->
+      <div class="modal-footer">
+        <button (click)="closeEditModal()" type="button" class="btn btn-secondary"> Close </button>
+        <button data-testid="save-button" (click)="saveText()" type="submit" class="btn btn-primary">
+          <div> Submit</div>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

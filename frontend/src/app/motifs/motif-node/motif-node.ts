@@ -49,10 +49,11 @@ export class MotifNode {
 
     for (const sagaMotif of node.motifSagas) {
       const saga = this.$sagas().find((saga) => saga.id === sagaMotif.sagaVersionId);
-      if (saga) {
+      if (saga && (this.$loggedIn() || saga.published)) {
         sagaVersions.push({
           sagaVersionId: sagaMotif.sagaVersionId,
-          sagaTitle: saga.title,
+          sagaAbbreviation: saga.abbreviation,
+          published: saga.published,
           sagaId: saga.sagaId,
           pageChapterNumber: sagaMotif.pageChapterNumber,
           inBoberg: sagaMotif.inBoberg,
@@ -60,7 +61,7 @@ export class MotifNode {
       }
     }
 
-    return sagaVersions.sort((a, b) => a.sagaTitle.localeCompare(b.sagaTitle));
+    return sagaVersions.sort((a, b) => a.sagaAbbreviation.localeCompare(b.sagaAbbreviation));
   });
 
   nodeColour: string = "";

@@ -9,6 +9,7 @@ export interface ISagaVm {
   pageAuthor: string;
   description: string;
   translated: boolean;
+  published: boolean;
   sagaVersions: ISagaVersionVm[];
   bibIds: number[];
   primarySources: IBibVm[];

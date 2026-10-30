@@ -24,6 +24,9 @@
             <p>
               <a [routerLink]="['/sagas', saga.id]">
                 <i>{{ saga.title }}</i>
+                @if (!saga.published) {
+                  <span style="font-variant: small-caps"> [draft]</span>
+                }
               </a>
             </p>
           }

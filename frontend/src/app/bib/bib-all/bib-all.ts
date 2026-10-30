@@ -18,7 +18,6 @@ import { AuthService } from "../../auth/auth.service";
   styleUrl: "./bib-all.css",
 })
 export class BibAll {
-
   private bibService = inject(BibService);
   private bibMapper = inject(BibMapper);
   private router = inject(Router);
@@ -62,18 +61,15 @@ export class BibAll {
     console.log("search term: " + searchTerm);
     //Filtered, alphabetised results based on search term.
     const filteredResults = this.bibsVm
-      .filter((bib) =>
-        bib.bibliographyEntry.toLowerCase().includes(searchTerm.toLowerCase()),
-      )
+      .filter((bib) => bib.bibliographyEntry.toLowerCase().includes(searchTerm.toLowerCase()))
       .sort((a, b) => a.bibliographyEntry.localeCompare(b.bibliographyEntry));
 
     //Further filter into primary and secondary bibliography entries
-    this.primarySources = filteredResults.filter(
-      (bib) => bib.primarySource == true,
-    );
-    this.secondarySources = filteredResults.filter(
-      (bib) => bib.primarySource == false,
-    );
+
+    if (this.$loggedIn()) {
+      this.primarySources = filteredResults.filter((bib) => bib.primarySource == true);
+      this.secondarySources = filteredResults.filter((bib) => bib.primarySource == false);
+    }
   }
 
   //READ

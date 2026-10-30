@@ -32,10 +32,19 @@
             @for (saga of $assignedSagas(); track $index) {
               <div>
                 @if ($result()) {
-                  <i><a [routerLink]="['/sagas', saga.sagaId]" [innerHTML]="this.highlightText(saga.sagaTitle)"></a></i>
+                  <i
+                    ><a [routerLink]="['/sagas', saga.sagaId]" [innerHTML]="this.highlightText(saga.sagaAbbreviation)">
+                      @if (!saga.published) {
+                        <span style="font-variant: small-caps"> [draft]</span>
+                      }
+                    </a></i
+                  >
                 } @else {
                   <a [routerLink]="['/sagas', saga.sagaId]">
-                    <i>{{ saga.sagaTitle }}</i>
+                    <i>{{ saga.sagaAbbreviation }}</i>
+                    @if (!saga.published) {
+                      <span style="font-variant: small-caps"> [draft]</span>
+                    }
                   </a>
                 }
                 @if (saga.pageChapterNumber) {

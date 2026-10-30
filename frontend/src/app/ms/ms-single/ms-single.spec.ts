@@ -38,7 +38,8 @@ fdescribe("MsSingle", () => {
 
   let sagaTitle: ISagaTitleDto = {
     id: 1,
-    title: "Saga title"
+    title: "Saga title",
+    published: true
   }
 
   let sagaTitles: ISagaTitleDto[] = [sagaTitle];

@@ -32,6 +32,7 @@ describe("MotifsAll", () => {
   let sagaTitle: ISagaTitleDto = {
     id: 1,
     title: "Saga title",
+    published: false
   };
 
   let pinnedNodesMap = new Map<number, IMotif>([

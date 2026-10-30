@@ -8,4 +8,6 @@ import java.util.List;
 @Repository
 public interface SagaVersionRepository extends JpaRepository<SagaVersionEntity, Integer> {
     List<SagaVersionEntity> findByTitleContainsIgnoreCase(String searchTerm);
+
+    List<SagaVersionEntity> findByAbbreviationContainsIgnoreCase(String searchTerm);
 }

@@ -74,6 +74,7 @@ export class MsSingle {
 
   sagas: ISagaTitleDto[] = [];
   activeMs: IMs = this.initialiseMs();
+  attachedSagas: IMsSaga[] = [];
   manuscriptsInRepo: IMs[] = [];
   repo: IMsRepositoryDto = this.initialiseRepository();
 
@@ -190,10 +191,19 @@ export class MsSingle {
     });
   }
 
+  //attachedSaga is used for dislaying MS saga data to the user. 
+  //If user is logged in, add to array; otherwise, only display saga information
+  //if the saga in question is published. 
   setMsSagaTitles() {
     this.activeMs.msSagaDtos.forEach((dto) => {
       const saga = this.sagas.find((saga) => dto.sagaId == saga.id);
-      if (saga) dto.sagaTitle = saga.title;
+      if (saga && (this.$loggedIn() || saga.published)){
+        this.attachedSagas.push({
+          ...dto,
+          sagaTitle: saga.title,
+          published: saga.published
+        });
+      } 
     });
   }
 
@@ -338,7 +348,8 @@ export class MsSingle {
         }
       },
       error: (err) => {
-        "Post MS failed";
+        this.closeAddEditModal();
+        console.log("Posting MS failed; " + JSON.stringify(err));
       },
     });
   }

@@ -197,7 +197,6 @@ export class MotifStore {
 
   async search(searchTerm: string, exactSearch: boolean) {
 
-
     let results: IMotifSearchResult[] = [];
 
     try {

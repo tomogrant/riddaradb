@@ -4,7 +4,7 @@ import com.se.riddaradb.ms.MsEntity;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name="sagams")
+@Table(name="saga_ms")
 public class SagaMsEntity {
 
     @EmbeddedId

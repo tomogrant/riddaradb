@@ -7,6 +7,7 @@ import com.se.riddaradb.sagaversion.SagaVersionRepository;
 import org.springframework.stereotype.Service;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
@@ -146,15 +147,19 @@ public class LocationService {
 
     public void deleteLocationEntryById(int id) {
 
-        locationRepository.deleteById(id);
-    }
+        //Remove locations from characters
+        locationRepository.findById(id).ifPresent(locationEntity -> {
+            for (LocationCharacterEntity locationCharacterEntity : new HashSet<>(locationEntity.getLocationCharacterEntities())) {
+                locationEntity.removeCharacter(locationCharacterEntity.getCharacterEntity());
+            };
 
-    private void removeLocationFromSagaVersions(int id){
-        for (SagaVersionEntity sagaVersionEntity : sagaVersionRepository.findAll()){
-            sagaVersionEntity.getLocationEntities().removeIf(loc -> loc.getId() == id);
-        }
-    }
+            locationEntity.getSagaVersionEntities().forEach(sagaVersion -> {
+                sagaVersion.removeLocation(locationEntity);
+            });
 
+            locationRepository.delete(locationEntity);
+        });
+    }
 }
 
 

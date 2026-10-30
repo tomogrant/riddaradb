@@ -14,17 +14,27 @@ public class SagaResponseDto {
     private String pageAuthor;
     private String description;
     private Boolean translated;
+    private Boolean published;
     private Set<SagaVersionResponseDto> sagaVersions;
     private Set<BibDto> bibDtos;
     private Set<SagaMsDto> sagaMsDtos = new HashSet<>();
 
-    public SagaResponseDto(Integer id, String title, String translatedTitle, String pageAuthor, String description, Boolean translated) {
+    public SagaResponseDto(
+            Integer id,
+            String title,
+            String translatedTitle,
+            String pageAuthor,
+            String description,
+            Boolean translated,
+            Boolean published
+    ) {
         this.id = id;
         this.title = title;
         this.translatedTitle = translatedTitle;
         this.pageAuthor = pageAuthor;
         this.description = description;
         this.translated = translated;
+        this.published = published;
     }
 
     public Integer getId() {
@@ -73,6 +83,14 @@ public class SagaResponseDto {
 
     public void setTranslated(Boolean translated) {
         this.translated = translated;
+    }
+
+    public Boolean getPublished() {
+        return published;
+    }
+
+    public void setPublished(Boolean published) {
+        this.published = published;
     }
 
     public Set<SagaVersionResponseDto> getSagaVersions() {

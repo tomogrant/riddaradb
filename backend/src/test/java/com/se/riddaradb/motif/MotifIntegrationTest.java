@@ -192,7 +192,9 @@ public class MotifIntegrationTest {
                 "Translated title",
                 "Page author",
                 "Description",
-                false);
+                false,
+                false
+        );
     }
 
     private SagaVersionRequestDto createSagaVersionRequestDto() {

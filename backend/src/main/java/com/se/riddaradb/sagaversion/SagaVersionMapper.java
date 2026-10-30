@@ -55,6 +55,7 @@ public class SagaVersionMapper {
         return new SagaVersionTitleDto(
                 sagaVersionEntity.getId(),
                 sagaVersionEntity.getSagaEntity().getId(),
+                sagaVersionEntity.getSagaEntity().getPublished(),
                 sagaVersionEntity.getTitle(),
                 sagaVersionEntity.getAbbreviation()
         );

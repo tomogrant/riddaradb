@@ -1,11 +1,9 @@
 package com.se.riddaradb.ms;
 
-import com.se.riddaradb.saga.SagaEntity;
 import com.se.riddaradb.saga.SagaMsEntity;
-import com.se.riddaradb.sagaversion.SagaVersionEntity;
-import com.se.riddaradb.sagaversion.SagaVersionMotifEntity;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -34,8 +32,9 @@ public class MsEntity {
     @OneToMany(mappedBy = "msEntity", orphanRemoval = true)
     private Set<SagaMsEntity> sagaMsEntities = new HashSet<>();
 
+    @NotNull
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="msRepositoryId")
+    @JoinColumn(name="msRepositoryId", nullable = false)
     private MsRepositoryEntity msRepositoryEntity;
 
     public MsEntity() {
