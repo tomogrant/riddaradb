@@ -3,7 +3,7 @@
 
 <div class="card-body page-container tree">
   <!-- PINBOARD -->
-  @if ($pinnedNodes().size > 0) {
+  @if ($pinnedNodesDisplay().length > 0) {
     <div class="card mb-4 border-3 custom-shadow" style="background-color: rgb(255, 236, 210)">
       <div class="card-body">
         <div class="row gx-2 align-items-center mb-3" style="font-variant: small-caps; font-size: 1.5rem">
@@ -21,15 +21,56 @@
         </div>
         <hr />
         <div class="masonry-grid">
-          @for (node of $pinnedNodes().values(); track $index; let i = $index) {
+          <!-- PINNED NODE CARD -->
+          @for (node of $pinnedNodesDisplay(); track $index; let i = $index) {
             <div class="masonry-item">
               <div class="card" style="box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); background-color: rgb(255, 254, 249)">
                 <div class="card-header">
                   <b>{{ node.motifCode }}</b> {{ node.motifName }}
                 </div>
-                @if (node.description) {
-                  <div class="card-body">{{ node.description }}</div>
+
+                <!-- Description -->
+                @if (node.description || node.motifSagas.length > 0) {
+                  <div class="card-body">
+                    @if (node.description) {
+                      <div class="row mb-1">
+                        <div class="col">
+                          <span>
+                            {{ node.description }}
+                          </span>
+                        </div>
+                      </div>
+                    }
+
+                    <!-- Sagas -->
+                    <div class="row">
+                      <div class="col">
+                        @for (motifSaga of node.motifSagas; track $index) {
+                          <span>
+                            <a [routerLink]="['/sagas', motifSaga.saga?.sagaId]">
+                              <i
+                                ><span>{{ motifSaga.saga?.abbreviation }}</span></i
+                              >
+                              @if (!motifSaga.saga?.published) {
+                                <span style="font-variant: small-caps"> [draft]</span>
+                              }
+                              @if (motifSaga.pageChapterNumber) {
+                                <span>, {{ motifSaga.pageChapterNumber }}</span>
+                              }
+                              @if (!motifSaga.inBoberg) {
+                                <span class="red">*</span>
+                              }
+                            </a>
+                            @if ($index + 1 < node.motifSagas.length) {
+                              <span>; </span>
+                            }
+                          </span>
+                        }
+                      </div>
+                    </div>
+                  </div>
                 }
+
                 <div class="card-footer">
                   <span style="float: right">
                     <button
@@ -265,7 +306,13 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="setModalStateToClose()">
           Close
         </button>
-        <button type="button" data-testid="save-button" class="btn btn-primary" (click)="submitForm()">Save</button>
+        <button type="button" data-testid="save-button" class="btn btn-primary spinner-button" (click)="submitForm()" [disabled]="$loading()">
+          @if ($loading()) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <div> Submit </div>
+          }
+        </button>
       </div>
     </div>
   </div>

@@ -5,7 +5,11 @@
 <div class="card-body page-container">
   <div class="container">
     @if (initialising) {
-      <div class="spinner-border spinner-border-lg" role="status"> </div>
+      <div class="row">
+        <div class="col">
+          <div class="spinner-border spinner-border-lg" role="status"> </div>
+        </div>
+      </div>
     } @else {
       @for (saga of sagas; track saga.id) {
         @if ($loggedIn() || saga.published) {

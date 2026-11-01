@@ -93,6 +93,9 @@ export class MsAll {
   repositoriesVmMap: Map<number, IMsRepositoryVm> = new Map<number, IMsRepositoryVm>();
   msMap: Map<number, IMs> = new Map<number, IMs>();
 
+  initialising: boolean = false;
+  loading: boolean = false;
+
   ngOnInit() {
     this.displayRepositories();
 
@@ -265,7 +268,6 @@ export class MsAll {
     this.country.updateValueAndValidity();
 
     if (this.editForm.valid) {
-
       this.repositoryDto.name = this.name.value;
       this.repositoryDto.city = this.city.value;
       this.repositoryDto.country = this.country.value;
@@ -282,8 +284,10 @@ export class MsAll {
 
   //CREATE
   postMsRepository() {
+    this.loading = true;
     this.msService.postMsRepository(this.repositoryDto).subscribe({
       next: (repo) => {
+        this.loading = false;
         this.closeAddEditModal();
         console.log("Saved successfully: " + repo);
         if (!repo.id) return;
@@ -303,6 +307,7 @@ export class MsAll {
         this.updateFilter("");
       },
       error: (err) => {
+        this.loading = false;
         this.closeAddEditModal();
         console.log("Problem with saving: " + JSON.stringify(err));
       },
@@ -311,26 +316,36 @@ export class MsAll {
 
   //READ
   displayRepositories() {
+    this.initialising = true;
     this.msService.getMsRepositories().subscribe({
       next: (receivedRepositories) => {
         this.repositoriesDto = receivedRepositories;
         this.msService.getMsEntries().subscribe({
           next: (receivedManuscripts) => {
+            this.initialising = false;
             this.mss = receivedManuscripts;
             this.sortManuscripts();
             this.updateFilter("");
           },
-          error: (err) => console.log("Error fetching mss: " + err),
+          error: (err) => {
+            this.initialising = false;
+            console.log("Error fetching mss: " + err);
+          },
         });
       },
-      error: (err) => console.log("Error fetching repositories: " + err),
+      error: (err) => {
+        this.initialising = false;
+        console.log("Error fetching repositories: " + err);
+      },
     });
   }
 
   //UPDATE
   updateMsRepository() {
+    this.loading = true;
     this.msService.putMsRepository(this.repositoryDto).subscribe({
       next: (repo) => {
+        this.loading = false;
         console.log("Updated successfully! " + repo);
         var repoToChange = this.repositoriesVm.find((repoInCollection) => repoInCollection.id == repo.id);
         if (repoToChange) {
@@ -343,6 +358,7 @@ export class MsAll {
         }
       },
       error: (err) => {
+        this.loading = false;
         console.log("Problem with saving: " + JSON.stringify(err.error));
       },
     });
@@ -374,7 +390,7 @@ export class MsAll {
       if (!value) {
         return null;
       }
-      
+
       const duplicate = this.repositoriesDto.find(
         (dto) => dto.name.trim().toLowerCase() === value && dto.id !== control.parent?.get("id")?.value,
       );

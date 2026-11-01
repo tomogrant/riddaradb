@@ -6,12 +6,14 @@ import { SagaService } from "../../sagas/common/saga.service";
 import { ISagaVersionTitleDto } from "../../sagas/common/ISagaVersionTitleDto";
 import { IMotifSearchResult } from "./IMotifSearchResult";
 import { HttpErrorResponse } from "@angular/common/http";
+import { MotifModalService } from "./motif-modal.service";
 
 @Injectable({
   providedIn: "root",
 })
 export class MotifStore {
   motifService = inject(MotifService);
+  motifModalService = inject(MotifModalService);
   sagaService = inject(SagaService);
 
   $sagaTitles = signal(new Array<ISagaVersionTitleDto>());
@@ -34,6 +36,8 @@ export class MotifStore {
   $searchTerm = signal("");
   $searchMessage = signal("");
   $showColourCoding = signal(false);
+
+  $loading = signal(false);
 
   async initialise() {
     this.collapseAll();
@@ -70,7 +74,7 @@ export class MotifStore {
   }
 
   savePinnedNodesToLocalStorage() {
-    this.$pinnedNodes
+    this.$pinnedNodes;
 
     localStorage.setItem("pinnedNodes", JSON.stringify([...this.$pinnedNodes().keys()]));
     console.log("Pinned nodes saved to local storage");
@@ -107,7 +111,7 @@ export class MotifStore {
       console.log("Node is present in $pinnedNodes: " + next.has(nodeId));
 
       //Node is no longer in the motif store; remove from pinned nodes
-      if (!node || !node.id){
+      if (!node || !node.id) {
         next.delete(nodeId);
         return next;
       }
@@ -196,26 +200,25 @@ export class MotifStore {
   }
 
   async search(searchTerm: string, exactSearch: boolean) {
-
     let results: IMotifSearchResult[] = [];
 
     try {
       results = exactSearch
-      ? await firstValueFrom(this.motifService.searchMotifsExactMatch(searchTerm))
-      : await firstValueFrom(this.motifService.searchMotifs(searchTerm));
-
-    }
-    catch(err: unknown) {
-      if (err instanceof HttpErrorResponse && err.status === 400){
+        ? await firstValueFrom(this.motifService.searchMotifsExactMatch(searchTerm))
+        : await firstValueFrom(this.motifService.searchMotifs(searchTerm));
+    } catch (err: unknown) {
+      if (err instanceof HttpErrorResponse && err.status === 400) {
         console.log(JSON.stringify(err));
         this.$searchMessage.set("Too many results. Please refine your search.");
         return;
       }
 
-      throw (err);
+      throw err;
     }
 
-    results.length ? this.$searchMessage.set(`${results.length} results.`) : this.$searchMessage.set("No results found.");
+    results.length
+      ? this.$searchMessage.set(`${results.length} results.`)
+      : this.$searchMessage.set("No results found.");
 
     this.$searchActive.set(true);
     this.$searchTerm.set(searchTerm);
@@ -431,41 +434,59 @@ export class MotifStore {
   }
 
   postMotifNode(newMotifNode: IMotif) {
-    this.motifService.postMotif(newMotifNode).subscribe((postedMotif) => {
-      console.log("motif posted: " + postedMotif);
-      this.updateMotifNode(postedMotif);
+    this.$loading.set(true);
+    this.motifService.postMotif(newMotifNode).subscribe({
+      next: (postedMotif) => {
+        this.$loading.set(false);
+        this.motifModalService.closeModal();
+        console.log("motif posted: " + postedMotif);
+        this.updateMotifNode(postedMotif);
 
-      if (postedMotif.parentId != null) {
-        this.assignChild(postedMotif);
-        const parentNode = this.getMotifNode(postedMotif.parentId);
-        if (!parentNode) return;
-        this.sortChildIds(parentNode);
-        this.expand(postedMotif.parentId);
-      } else {
-        this.addNewRootMotif(postedMotif);
-      }
+        if (postedMotif.parentId != null) {
+          this.assignChild(postedMotif);
+          const parentNode = this.getMotifNode(postedMotif.parentId);
+          if (!parentNode) return;
+          this.sortChildIds(parentNode);
+          this.expand(postedMotif.parentId);
+        } else {
+          this.addNewRootMotif(postedMotif);
+        }
+      },
+      error: (err) => {
+        this.$loading.set(false);
+        console.log("Error posting motif: " + JSON.stringify(err));
+      },
     });
   }
 
   putMotifNode(updatedMotifNode: IMotif) {
-    this.motifService.updateMotif(updatedMotifNode).subscribe((updatedMotif) => {
-      //Retain children after edit. Children are not returned by backend API
-      //and field 'hasChildren' is not set until after a following get request.
-      //This is a shortcut.
-      const motif = updatedMotif;
-      motif.hasChildren = updatedMotifNode.hasChildren;
-      motif.childIds = updatedMotifNode.childIds;
-      this.updateMotifNode(motif);
+    this.$loading.set(true);
+    this.motifService.updateMotif(updatedMotifNode).subscribe({
+      next: (updatedMotif) => {
+        this.$loading.set(false);
+        this.motifModalService.closeModal();
+        //Retain children after edit. Children are not returned by backend API
+        //and field 'hasChildren' is not set until after a following get request.
+        //This is a shortcut.
+        const motif = updatedMotif;
+        motif.hasChildren = updatedMotifNode.hasChildren;
+        motif.childIds = updatedMotifNode.childIds;
+        this.updateMotifNode(motif);
 
-      if (motif.parentId != null) {
-        const parentNode = this.getMotifNode(motif.parentId);
-        if (!parentNode) return;
-        this.sortChildIds(parentNode);
-      } else {
-        this.sortRootIds();
+        if (motif.parentId != null) {
+          const parentNode = this.getMotifNode(motif.parentId);
+          if (!parentNode) return;
+          this.sortChildIds(parentNode);
+        } else {
+          this.sortRootIds();
+        }
+
+        this.editPinnedNode(updatedMotif);
+      },
+      error: err => {
+        this.$loading.set(false);
+        console.log("Problem updating motif: " + JSON.stringify(err));
       }
-
-      this.editPinnedNode(updatedMotif);
     });
   }
 

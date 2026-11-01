@@ -57,6 +57,7 @@ export class BibSingle {
 
   defaultPublicationTypeOption: string = "Select publication type:";
 
+  initialising: boolean = false;
   loading: boolean = false;
 
   editForm = new FormGroup(
@@ -192,6 +193,7 @@ export class BibSingle {
     }
     //If parameter is not null and not empty/decimal...
     else if (id) {
+      this.initialising = true;
       this.bibService.getBibEntryById(id).subscribe({
         next: (receivedEntry) => {
           this.activeBib = receivedEntry;
@@ -199,6 +201,7 @@ export class BibSingle {
           this.getSagas();
         },
         error: (err: HttpErrorResponse) => {
+          this.initialising = false;
           console.log("Error encountered retrieving bibliography entry: " + JSON.stringify(err.error));
           this.navigateToBibAllPage();
         },
@@ -218,16 +221,21 @@ export class BibSingle {
   }
 
   getSagas() {
-    this.sagaService.getSagaTitles().subscribe((sagas) => {
-      this.sagas = [];
-      sagas.forEach((saga) => this.sagas.push(saga));
-      this.sagas.sort((a, b) => a.title.localeCompare(b.title));
+    this.sagaService.getSagaTitles().subscribe({
+      next: (sagas) => {
+        this.initialising = false;
+        this.sagas = [];
+        sagas.forEach((saga) => this.sagas.push(saga));
+        this.sagas.sort((a, b) => a.title.localeCompare(b.title));
 
-      if (this.$loggedIn()){
-        this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id));
-      }
-      else {
-        this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id) && saga.published);
+        if (this.$loggedIn()) {
+          this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id));
+        } else {
+          this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id) && saga.published);
+        }
+      },
+      error: err => {
+        "Error fetching sagas: " + JSON.stringify(err);
       }
     });
   }
@@ -784,7 +792,6 @@ export class BibSingle {
 
       if (value !== "") {
         if (isNaN(value) || value < 1) {
-          console.log("Entry invalid!");
           return { numericError: true };
         } else {
           return null;

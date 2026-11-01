@@ -77,6 +77,8 @@ export class MsSingle {
   attachedSagas: IMsSaga[] = [];
   manuscriptsInRepo: IMs[] = [];
   repo: IMsRepositoryDto = this.initialiseRepository();
+  initialising: boolean = false;
+  loading: boolean = false;
 
   readonly Mode = Mode;
   mode: Mode = Mode.NONE;
@@ -104,12 +106,14 @@ export class MsSingle {
       this.getRepo();
       this.addMs();
     } else if (id) {
+      this.initialising = true;
       this.msService.getMsEntryById(id).subscribe({
         next: (receivedEntry) => {
           this.activeMs = receivedEntry;
           this.title.setTitle("riddaraDB - " + this.activeMs.shelfmark);
           this.getSagas();
           this.getRepo();
+          this.initialising = false;
         },
         error: err => {
           console.log("Error getting MS: " + JSON.stringify(err.error));
@@ -195,6 +199,7 @@ export class MsSingle {
   //If user is logged in, add to array; otherwise, only display saga information
   //if the saga in question is published. 
   setMsSagaTitles() {
+    this.attachedSagas = [];
     this.activeMs.msSagaDtos.forEach((dto) => {
       const saga = this.sagas.find((saga) => dto.sagaId == saga.id);
       if (saga && (this.$loggedIn() || saga.published)){
@@ -336,8 +341,10 @@ export class MsSingle {
   }
 
   postMs(payload: IMs) {
+    this.loading = true
     this.msService.postMs(payload).subscribe({
       next: (ms) => {
+        this.loading = false;
         this.activeMs = ms;
         this.setMsSagaTitles();
         this.activeMs.msSagaDtos.sort((a, b) =>
@@ -348,6 +355,7 @@ export class MsSingle {
         }
       },
       error: (err) => {
+        this.loading = false;
         this.closeAddEditModal();
         console.log("Posting MS failed; " + JSON.stringify(err));
       },
@@ -355,8 +363,10 @@ export class MsSingle {
   }
 
   updateMs(payload: IMs) {
+    this.loading = true;
     this.msService.putMs(payload).subscribe({
       next: (ms) => {
+        this.loading = false;
         this.activeMs = ms;
         this.setMsSagaTitles();
         this.activeMs.msSagaDtos.sort((a, b) =>
@@ -365,7 +375,8 @@ export class MsSingle {
         this.closeAddEditModal();
       },
       error: (err) => {
-        "Update MS failed";
+        this.loading = false;
+        "Update MS failed: " + JSON.stringify(err);
       },
     });
   }

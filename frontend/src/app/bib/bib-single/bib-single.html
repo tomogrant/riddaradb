@@ -1,37 +1,45 @@
-<app-page-header backgroundImg="vignette.jpg">Bibliography entry</app-page-header>
+<app-page-header backgroundImg="vignette.jpg">
+  @if (initialising) {
+    <div class="spinner-border spinner-border-lg" role="status"> </div>
+  } @else {
+    Bibliography entry
+  }
+</app-page-header>
 
 <div class="card-body page-container">
   <div class="container">
-    <div class="row mb-3">
-      <div class="col">
-        <h3 [innerHTML]="activeBibVm.bibliographyEntry"></h3>
-      </div>
-    </div>
-
-    @if (activeBibVm.description !== "") {
-      <div class="row mb-4">
-        <div class="col description-text">
-          <p [innerHTML]="activeBibVm.description"></p>
-        </div>
-      </div>
-    }
-
-    @if (attachedSagas.length > 0) {
+    @if (!initialising) {
       <div class="row mb-3">
         <div class="col">
-          <h3 style="font-variant: small-caps">Sagas mentioned</h3>
-          @for (saga of attachedSagas; track $index) {
-            <p>
-              <a [routerLink]="['/sagas', saga.id]">
-                <i>{{ saga.title }}</i>
-                @if (!saga.published) {
-                  <span style="font-variant: small-caps"> [draft]</span>
-                }
-              </a>
-            </p>
-          }
+          <h3 [innerHTML]="activeBibVm.bibliographyEntry"></h3>
         </div>
       </div>
+
+      @if (activeBibVm.description !== "") {
+        <div class="row mb-4">
+          <div class="col description-text">
+            <p [innerHTML]="activeBibVm.description"></p>
+          </div>
+        </div>
+      }
+
+      @if (attachedSagas.length > 0) {
+        <div class="row mb-3">
+          <div class="col">
+            <h3 style="font-variant: small-caps">Sagas mentioned</h3>
+            @for (saga of attachedSagas; track $index) {
+              <p>
+                <a [routerLink]="['/sagas', saga.id]">
+                  <i>{{ saga.title }}</i>
+                  @if (!saga.published) {
+                    <span style="font-variant: small-caps"> [draft]</span>
+                  }
+                </a>
+              </p>
+            }
+          </div>
+        </div>
+      }
     }
 
     @if ($loggedIn() && mode !== Mode.ADD) {
@@ -661,9 +669,8 @@
           data-testid="save-button"
           (click)="submitAddOrEdit()"
           type="submit"
-          class="btn btn-primary"
-          [disabled]="type.value === defaultPublicationTypeOption || loading"
-          style="min-width: 70px">
+          class="btn btn-primary spinner-button"
+          [disabled]="type.value === defaultPublicationTypeOption || loading">
           @if (loading) {
             <div class="spinner-border spinner-border-sm" role="status"> </div>
           } @else {

@@ -22,39 +22,55 @@
 
         @if ($assignedSagas()?.length || $node()?.description != "") {
           <div class="card-body">
-            <div class="mb-2 description-text">
-              @if ($result()) {
-                <span [innerHTML]="this.highlightText($node()?.description)"></span>
-              } @else {
-                {{ $node()?.description }}
-              }
+            <!-- Description -->
+            <div class="row">
+              <div class="col description-text">
+                <div class="mb-2">
+                  @if ($result()) {
+                    <span [innerHTML]="this.highlightText($node()?.description)"></span>
+                  } @else {
+                    {{ $node()?.description }}
+                  }
+                </div>
+              </div>
             </div>
-            @for (saga of $assignedSagas(); track $index) {
-              <div>
-                @if ($result()) {
-                  <i
-                    ><a [routerLink]="['/sagas', saga.sagaId]" [innerHTML]="this.highlightText(saga.sagaAbbreviation)">
+
+            <!-- Sagas -->
+            <div class="row">
+              <div class="col">
+                @for (saga of $assignedSagas(); track $index) {
+                  <span>
+                    @if ($result()) {
+                      <i
+                        ><a
+                          [routerLink]="['/sagas', saga.sagaId]"
+                          [innerHTML]="this.highlightAbbreviation(saga.sagaAbbreviation)">
+                        </a>
+                      </i>
                       @if (!saga.published) {
                         <span style="font-variant: small-caps"> [draft]</span>
                       }
-                    </a></i
-                  >
-                } @else {
-                  <a [routerLink]="['/sagas', saga.sagaId]">
-                    <i>{{ saga.sagaAbbreviation }}</i>
-                    @if (!saga.published) {
-                      <span style="font-variant: small-caps"> [draft]</span>
+                    } @else {
+                      <a [routerLink]="['/sagas', saga.sagaId]">
+                        <i>{{ saga.sagaAbbreviation }}</i>
+                        @if (!saga.published) {
+                          <span style="font-variant: small-caps"> [draft]</span>
+                        }
+                      </a>
                     }
-                  </a>
-                }
-                @if (saga.pageChapterNumber) {
-                  <span>, {{ saga.pageChapterNumber }}</span>
-                }
-                @if (!saga.inBoberg) {
-                  <span class="red">*</span>
+                    @if (saga.pageChapterNumber) {
+                      <span>, {{ saga.pageChapterNumber }}</span>
+                    }
+                    @if (!saga.inBoberg) {
+                      <span class="red">*</span>
+                    }
+                  </span>
+                  @if ($assignedSagas() && $index + 1 < $assignedSagas()!.length){
+                    <span>; </span>
+                  }
                 }
               </div>
-            }
+            </div>
           </div>
         }
 

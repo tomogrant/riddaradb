@@ -1,5 +1,5 @@
 import { Component, inject, effect, computed, signal } from "@angular/core";
-import { ActivatedRoute, ParamMap } from "@angular/router";
+import { ActivatedRoute, ParamMap, RouterLink } from "@angular/router";
 import { form, FormField, required } from "@angular/forms/signals";
 import { MotifNode } from "../motif-node/motif-node";
 import { Modal } from "bootstrap";
@@ -18,7 +18,7 @@ export interface MotifDetails {
 
 @Component({
   selector: "app-motifs-all",
-  imports: [MotifNode, FormField, QuillModule, PageHeader],
+  imports: [MotifNode, FormField, QuillModule, PageHeader, RouterLink],
   templateUrl: "./motifs-all.html",
   styleUrl: "./motifs-all.css",
 })
@@ -26,9 +26,17 @@ export class MotifsAll {
   constructor() {
     //Opens modal when modal state is not null
     effect(() => {
-      if (this.$modalState() != null) {
+      if (this.$modalState() === null) {
+        this.closeModals();
+      }
+
+      if (this.$modalState()?.mode === Mode.ADD || this.$modalState()?.mode === Mode.EDIT) {
         this.setForm();
-        this.toggleModal();
+        this.openAddEditModal();
+      }
+
+      if (this.$modalState()?.mode === Mode.DELETE) {
+        this.openDeleteModal();
       }
     });
   }
@@ -44,7 +52,25 @@ export class MotifsAll {
 
   showValidationErrors: boolean = false;
   initialising: boolean = false;
+  $loading = computed(() => this.motifStore.$loading());
   $sagas = computed(() => this.motifStore.$sagaTitles());
+  $sagaMap = computed(() => new Map(this.$sagas().map((saga) => [saga.id, saga])));
+
+  //Array signal for convenient display of pinboard.
+  //There were too many data sources so this centralises everything.
+  $pinnedNodesDisplay = computed(() => {
+    return Array.from(this.$pinnedNodes().values()).map((node) => ({
+      ...node,
+      motifSagas: node.motifSagas
+        .map((motifSaga) => ({
+          ...motifSaga,
+          saga: this.$sagaMap().get(motifSaga.sagaVersionId),
+        }))
+        //Filter out unpublished sagas if not logged in
+        .filter((motifSagas) => (this.$loggedIn() ? motifSagas : motifSagas.saga?.published))
+        .sort((a, b) => (a.saga?.abbreviation ?? "").localeCompare(b.saga?.abbreviation ?? "")),
+    }));
+  });
 
   $editModel = signal<IMotifForm>(this.createNewMotifForm());
 
@@ -224,16 +250,54 @@ export class MotifsAll {
     }
   }
 
-  toggleModal() {
-    const templateModal =
-      this.$modalState()?.mode == Mode.DELETE
-        ? document.getElementById("deleteModal")
-        : document.getElementById("editAddModal");
+  openAddEditModal() {
+    const templateModal = document.getElementById("editAddModal");
 
     if (templateModal != null) {
       var modal = Modal.getOrCreateInstance(templateModal);
       if (modal != null) {
-        modal.toggle();
+        modal.show();
+      }
+    }
+  }
+
+  closeAddEditModal() {
+    const templateModal = document.getElementById("editAddModal");
+
+    if (templateModal != null) {
+      var modal = Modal.getOrCreateInstance(templateModal);
+      if (modal != null) {
+        modal.show();
+      }
+    }
+  }
+
+  openDeleteModal() {
+    const templateModal = document.getElementById("deleteModal");
+
+    if (templateModal != null) {
+      var modal = Modal.getOrCreateInstance(templateModal);
+      if (modal != null) {
+        modal.show();
+      }
+    }
+  }
+
+  closeModals() {
+    const addEditModal = document.getElementById("editAddModal");
+    const deleteModal = document.getElementById("deleteModal");
+
+    if (addEditModal != null) {
+      var modal = Modal.getOrCreateInstance(addEditModal);
+      if (modal != null) {
+        modal.hide();
+      }
+    }
+
+    if (deleteModal != null) {
+      var modal = Modal.getOrCreateInstance(deleteModal);
+      if (modal != null) {
+        modal.hide();
       }
     }
   }
@@ -249,7 +313,7 @@ export class MotifsAll {
     }
   }
 
-    closeClearPinboardModal() {
+  closeClearPinboardModal() {
     const clearPinboardModal = document.getElementById("pinboardModal");
 
     if (clearPinboardModal != null) {
@@ -291,9 +355,6 @@ export class MotifsAll {
           motifSagas: this.editForm.sagas().value(),
         });
       }
-
-      this.setModalStateToClose();
-      this.toggleModal();
     } else {
       this.showValidationErrors = true;
     }

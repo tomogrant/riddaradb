@@ -10,85 +10,105 @@
     </div>
 
     <div class="accordion" id="accordion-container">
-      @for (repo of filteredRepositoriesVm; track $index; let i = $index) {
-        <div class="row g-0">
-          <div class="custom-shadow">
-            <div class="col-12">
-              <div class="accordion-item">
-                <h2 class="accordion-header">
-                  <button
-                    class="accordion-button"
-                    type="button"
-                    [class.collapsed]="!repo.accordionOpen"
-                    [attr.aria-expanded]="repo.accordionOpen"
-                    (click)="repo.accordionOpen = !repo.accordionOpen">
-                    <span class="me-3" style="font-variant: small-caps; font-size: 1.3rem">
-                      {{ repo.name }} ({{ repo.city }}, {{ repo.country }})
-                    </span>
-                  </button>
-                </h2>
-              </div>
+      @if (initialising) {
+        <div class="row">
+          <div class="col">
+            <div class="spinner-border spinner-border-lg" role="status"> </div>
+          </div>
+        </div>
+      } @else {
+        @for (repo of filteredRepositoriesVm; track $index; let i = $index) {
+          <div class="row g-0">
+            <div class="custom-shadow">
+              <div class="col-12">
+                <div class="accordion-item">
+                  <h2 class="accordion-header">
+                    <button
+                      class="accordion-button"
+                      type="button"
+                      [class.collapsed]="!repo.accordionOpen"
+                      [attr.aria-expanded]="repo.accordionOpen"
+                      (click)="repo.accordionOpen = !repo.accordionOpen">
+                      <span class="me-3" style="font-variant: small-caps; font-size: 1.3rem">
+                        {{ repo.name }} ({{ repo.city }}, {{ repo.country }})
+                      </span>
+                    </button>
+                  </h2>
+                </div>
 
-              <div [id]="repo.id" class="accordion-collapse" [class.show]="repo.accordionOpen">
-                <div class="accordion-body accordion-content">
-                  @if (repo.manuscripts.length > 0) {
-                    @for (ms of repo.manuscripts; track $index) {
-                      @if (ms.name) {
-                        <p>
-                          <a [routerLink]="['/ms', ms.id]" ]>{{ ms.shelfmark }} ({{ ms.name }})</a>
-                        </p>
-                      } @else {
-                        <p>
-                          <a [routerLink]="['/ms', ms.id]" ]>
-                            {{ ms.shelfmark }}
-                          </a>
-                        </p>
+                <div [id]="repo.id" class="accordion-collapse" [class.show]="repo.accordionOpen">
+                  <div class="accordion-body accordion-content">
+                    @if (repo.manuscripts.length > 0) {
+                      @for (ms of repo.manuscripts; track $index) {
+                        @if (ms.name) {
+                          <p>
+                            <a [routerLink]="['/ms', ms.id]" ]>{{ ms.shelfmark }} ({{ ms.name }})</a>
+                          </p>
+                        } @else {
+                          <p>
+                            <a [routerLink]="['/ms', ms.id]" ]>
+                              {{ ms.shelfmark }}
+                            </a>
+                          </p>
+                        }
                       }
+                    } @else {
+                      <p>This repository is empty.</p>
                     }
-                  } @else {
-                    <p>This repository is empty.</p>
-                  }
+                  </div>
                 </div>
               </div>
-            </div>
 
-            @if ($loggedIn()) {
-              <div class="col">
-                <div class="card rounded-0 beige">
-                  <span class="m-2">
-                    <button type="button" [attr.data-testid]="'add-ms-button-' + i" class="me-1 btn btn-sm btn-outline-success" (click)="addManuscript(repo.id)">
-                      Add MS
-                    </button>
+              @if ($loggedIn()) {
+                <div class="col">
+                  <div class="card rounded-0 beige">
+                    <span class="m-2">
+                      <button
+                        type="button"
+                        [attr.data-testid]="'add-ms-button-' + i"
+                        class="me-1 btn btn-sm btn-outline-success"
+                        (click)="addManuscript(repo.id)">
+                        Add MS
+                      </button>
 
-                    <button
-                      type="button"
-                      [attr.data-testid]="'edit-repo-button-' + i"
-                      class="me-1 btn btn-sm btn-outline-secondary"
-                      (click)="editRepository(repo.id)">
-                      Edit
-                    </button>
+                      <button
+                        type="button"
+                        [attr.data-testid]="'edit-repo-button-' + i"
+                        class="me-1 btn btn-sm btn-outline-secondary"
+                        (click)="editRepository(repo.id)">
+                        Edit
+                      </button>
 
-                    @if (repo.manuscripts.length > 0) {
-                      @if ($isAdmin()) {
-                        <button type="button" [attr.data-testid]="'delete-repo-button-' + i" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
+                      @if (repo.manuscripts.length > 0) {
+                        @if ($isAdmin()) {
+                          <button
+                            type="button"
+                            [attr.data-testid]="'delete-repo-button-' + i"
+                            class="btn btn-sm btn-outline-danger"
+                            (click)="openDeleteModal(repo.id)">
+                            Delete
+                          </button>
+                        }
+                      } @else {
+                        <button
+                          type="button"
+                          [attr.data-testid]="'delete-repo-button-' + i"
+                          class="btn btn-sm btn-outline-danger"
+                          (click)="openDeleteModal(repo.id)">
                           Delete
                         </button>
                       }
-                    } @else {
-                      <button type="button" [attr.data-testid]="'delete-repo-button-' + i" class="btn btn-sm btn-outline-danger" (click)="openDeleteModal(repo.id)">
-                        Delete
-                      </button>
-                    }
-                  </span>
+                    </span>
+                  </div>
                 </div>
-              </div>
+              }
+            </div>
+
+            @if ($loggedIn()) {
+              <div class="col m-2"></div>
             }
           </div>
-
-          @if ($loggedIn()) {
-            <div class="col m-2"></div>
-          }
-        </div>
+        }
       }
     </div>
 
@@ -96,7 +116,9 @@
       <!-- 'Add' button -->
       <div class="row mt-4">
         <div class="col">
-          <button (click)="addRepository()" type="button" data-testid="add-repo-button" class="btn btn-success btn-sm">Add repository</button>
+          <button (click)="addRepository()" type="button" data-testid="add-repo-button" class="btn btn-success btn-sm"
+            >Add repository</button
+          >
         </div>
       </div>
     }
@@ -199,8 +221,13 @@
       <!-- END OF FIELDS -->
       <div class="modal-footer">
         <button (click)="closeAddEditModal()" type="button" class="btn btn-secondary">Close</button>
-        <button data-testid="save-button" (click)="submitAddOrEdit()" type="submit" class="btn btn-primary">
-          Save
+        <button data-testid="save-button" (click)="submitAddOrEdit()" [disabled]="loading" type="submit" class="btn btn-primary spinner-button">
+          @if (loading){
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          }
+          @else {
+            Save
+          }
         </button>
       </div>
     </div>

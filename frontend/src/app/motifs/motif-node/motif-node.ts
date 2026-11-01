@@ -52,6 +52,7 @@ export class MotifNode {
       if (saga && (this.$loggedIn() || saga.published)) {
         sagaVersions.push({
           sagaVersionId: sagaMotif.sagaVersionId,
+          sagaTitle: saga.title,
           sagaAbbreviation: saga.abbreviation,
           published: saga.published,
           sagaId: saga.sagaId,
@@ -140,10 +141,33 @@ export class MotifNode {
 
   highlightText(textToHighlight: string | undefined) {
     if (textToHighlight && textToHighlight.length > 0) {
-      var re = new RegExp(this.$searchTerm(), "i");
+      const escapedTerm = this.$searchTerm().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var re = new RegExp(escapedTerm, "gi");
       return textToHighlight.replace(re, (match) => `<mark>${match}</mark>`);
     } else {
       return "";
     }
+  }
+
+  highlightAbbreviation(textToHighlight: string | undefined) {
+
+    if (textToHighlight && textToHighlight.length > 0) {
+      const escapedTerm = this.$searchTerm().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      var re = new RegExp(escapedTerm, "gi");
+
+      //First look for a match with the abbreviation itself
+      if (textToHighlight.match(re)) {
+        return textToHighlight.replace(re, (match) => `<mark>${match}</mark>`);
+      }
+     else {
+      //Then look for a match with the saga title
+      const match = this.$assignedSagas()?.some((saga) => 
+        saga.sagaTitle.toLowerCase().includes(this.$searchTerm().toLowerCase()));
+      if (match) {
+        return `<mark>${textToHighlight}</mark>`;
+      } 
+    }
+  }
+    return textToHighlight;
   }
 }
