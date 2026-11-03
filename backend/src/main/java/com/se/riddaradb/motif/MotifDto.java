@@ -15,16 +15,16 @@ public class MotifDto {
     private String motifName;
     private String description;
     private Integer parentId;
-    private Boolean hasChildren;
+    private Integer childCount;
     private Set<MotifSagaVersionDto> motifSagas = new HashSet<>();
 
-    public MotifDto(Integer id, String motifCode, String motifName, String description, Boolean hasChildren) {
+    public MotifDto(Integer id, String motifCode, String motifName, String description, Integer childCount) {
         this.id = id;
         this.motifCode = motifCode;
         this.motifName = motifName;
         this.description = description;
         this.parentId = null;
-        this.hasChildren = hasChildren;
+        this.childCount = childCount;
         Set<SagaVersionMotifDto> sagaMotifs = new HashSet<>();
     }
 
@@ -69,12 +69,12 @@ public class MotifDto {
         this.parentId = parentId;
     }
 
-    public Boolean getHasChildren() {
-        return hasChildren;
+    public Integer getChildCount() {
+        return childCount;
     }
 
-    public void setHasChildren(Boolean hasChildren) {
-        this.hasChildren = hasChildren;
+    public void setChildCount(Integer childCount) {
+        this.childCount = childCount;
     }
 
     public Set<MotifSagaVersionDto> getMotifSagas() {

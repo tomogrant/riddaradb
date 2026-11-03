@@ -34,6 +34,7 @@ export class MotifNode {
   $searchActive = computed(() => this.motifStore.$searchActive());
   $searchTerm = computed(() => this.motifStore.$searchTerm());
   $showColourCoding = computed(() => this.motifStore.$showColourCoding());
+  $expandLoading = computed(() => this.motifStore.$expandLoading());
 
   //Auth signals
   $loggedIn = computed(() => this.authService.$loggedIn());
@@ -75,12 +76,18 @@ export class MotifNode {
   toggleExpand() {
     if (this.$expanded()) {
       this.motifStore.collapse(this.$nodeId());
+      console.log("COLLAPSING");
       return;
     }
 
     this.motifStore.expand(this.$nodeId());
+    console.log("EXPANDING");
 
-    if (this.$node()?.hasChildren && !this.$node()?.childIds) {
+    const node = this.$node();
+
+    //If node has at least one child AND no children have been assigned OR the amount of 
+    //assigned children is less than the total amount, then assign all children.
+    if (node?.childCount && (!node?.childIds || node?.childIds.length < node?.childCount)){
       this.motifStore.getMotifChildren(this.$nodeId());
     }
   }

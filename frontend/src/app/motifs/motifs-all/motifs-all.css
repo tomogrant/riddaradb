@@ -1,5 +1,10 @@
-.tree {
+
+.tree-container {
+  height: calc(100vh);
+  overflow-y: auto;
   overflow-x: auto;
+  overflow-anchor: none;
+  background-color: rgb(255, 247, 238);
 }
 
 .masonry-grid {

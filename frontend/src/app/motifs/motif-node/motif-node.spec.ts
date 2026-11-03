@@ -17,7 +17,7 @@ describe("MotifNode", () => {
     motifName: "Motif",
     description: "Description",
     parentId: null,
-    hasChildren: true,
+    childCount: 1,
     motifSagas: [],
   };
 
@@ -179,7 +179,7 @@ describe("MotifNode", () => {
     });
 
     const childlessMotif = { ...parentMotif };
-    childlessMotif.hasChildren = false;
+    childlessMotif.childCount = 0;
     motifStoreMock.$motifNodes.set(new Map([[childlessMotif.id!, childlessMotif]]));
 
     component = fixture.componentInstance;
@@ -298,7 +298,7 @@ describe("MotifNode", () => {
     component = fixture.componentInstance;
 
     const childlessMotif = { ...parentMotif };
-    childlessMotif.hasChildren = false;
+    childlessMotif.childCount = 0;
     motifStoreMock.$motifNodes.set(new Map([[childlessMotif.id!, childlessMotif]]));
 
     fixture.detectChanges();

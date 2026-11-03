@@ -7,7 +7,13 @@ import org.springframework.stereotype.Service;
 public class MotifMapper {
 
     public MotifDto mapToDto(MotifEntity motifEntity){
-        MotifDto motifDto = new MotifDto(motifEntity.getId(), motifEntity.getMotifCode(), motifEntity.getMotifName(), motifEntity.getDescription(), !motifEntity.getChildren().isEmpty());
+        MotifDto motifDto = new MotifDto(
+                motifEntity.getId(),
+                motifEntity.getMotifCode(),
+                motifEntity.getMotifName(),
+                motifEntity.getDescription(),
+                motifEntity.getChildren().size()
+        );
 
         for (SagaVersionMotifEntity sagaVersionMotifEntity : motifEntity.getSagaVersionMotifEntities()){
             motifDto.getMotifSagas().add(new MotifSagaVersionDto

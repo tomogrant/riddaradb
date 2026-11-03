@@ -1,9 +1,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <app-page-header backgroundImg="vignette.jpg">Folkloric motifs</app-page-header>
 
-<div class="card-body page-container tree">
-  <!-- PINBOARD -->
+<div class="card-body page-container">
   @if ($pinnedNodesDisplay().length > 0) {
+
+      <!-- PINBOARD -->
     <div class="card mb-4 border-3 custom-shadow" style="background-color: rgb(255, 236, 210)">
       <div class="card-body">
         <div class="row gx-2 align-items-center mb-3" style="font-variant: small-caps; font-size: 1.5rem">
@@ -107,7 +108,7 @@
   }
 
   <!-- SEARCH BAR -->
-  <div class="card mb-4 p-3 custom-shadow beige">
+  <div class="card p-3 custom-shadow-larger position-relative z-1 beige">
     <div class="row gx-3 gy-3">
       <div class="col-12 col-md-4">
         <div class="input-group">
@@ -121,7 +122,7 @@
             data-testid="search-button"
             class="btn btn-outline-success"
             (click)="submitSearchRequest()"
-            [disabled]="!searchForm.searchTerm().value()"
+            [disabled]="!searchForm.searchTerm().value() || $searchLoading()"
             >Search</button
           >
           <button type="button" data-testid="clear-button" class="btn btn-outline-danger" (click)="clearSearch()"
@@ -135,6 +136,7 @@
           data-testid="collapse-all-button"
           class="me-3 btn btn-outline-secondary"
           (click)="collapseAll()"
+          [disabled]="$searchActive()"
           >Collapse all</button
         >
         <button
@@ -147,22 +149,30 @@
       </div>
       <div class="col-12 col-md-4 d-flex">
         <span class="mt-1">
-          <b>
-            {{ $searchMessage() }}
-          </b>
+          @if ($searchLoading()) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <b>
+              {{ $searchMessage() }}
+            </b>
+          }
         </span>
       </div>
     </div>
   </div>
 
-  <!-- ROOT MOTIF CARDS -->
-  @if (initialising) {
-    <div class="spinner-border spinner-border-lg" role="status"> </div>
-  } @else {
-    @for (rootId of $rootIds(); track rootId) {
-      <app-motif-node [$nodeId]="rootId" [$depth]="1"></app-motif-node>
+      <!-- MOTIF CARD TREE -->
+  <div class="tree-container card pt-2 pb-1 border-0 border-bottom border-2 rounded-top-0">
+    @if ($initialising()) {
+      <div class="spinner-border spinner-border-lg" role="status"> </div>
+    } @else {
+      @for (rootId of $rootIds(); track rootId) {
+        <div class="mt-2 ms-2 me-2">
+          <app-motif-node [$nodeId]="rootId" [$depth]="1"></app-motif-node>
+        </div>
+      }
     }
-  }
+  </div>
 
   @if ($loggedIn()) {
     <!-- ADD BUTTON -->
@@ -306,8 +316,13 @@
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" (click)="setModalStateToClose()">
           Close
         </button>
-        <button type="button" data-testid="save-button" class="btn btn-primary spinner-button" (click)="submitForm()" [disabled]="$loading()">
-          @if ($loading()) {
+        <button
+          type="button"
+          data-testid="save-button"
+          class="btn btn-primary spinner-button"
+          (click)="submitForm()"
+          [disabled]="$requestLoading()">
+          @if ($requestLoading()) {
             <div class="spinner-border spinner-border-sm" role="status"> </div>
           } @else {
             <div> Submit </div>

@@ -27,6 +27,9 @@ body {
 .custom-shadow {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
+.custom-shadow-larger {
+  box-shadow: 0 4px 4px rgba(0, 0, 0, 0.2);
+}
 .spinner-button {
   min-width: 70px
 }

@@ -51,8 +51,10 @@ export class MotifsAll {
   readonly Mode = Mode;
 
   showValidationErrors: boolean = false;
-  initialising: boolean = false;
-  $loading = computed(() => this.motifStore.$loading());
+  $initialising = computed(() => this.motifStore.$initialising());
+  $requestLoading = computed(() => this.motifStore.$requestLoading());
+  $searchLoading = computed(() => this.motifStore.$searchLoading());
+  $searchActive = computed(() => this.motifStore.$searchActive());
   $sagas = computed(() => this.motifStore.$sagaTitles());
   $sagaMap = computed(() => new Map(this.$sagas().map((saga) => [saga.id, saga])));
 
@@ -123,17 +125,35 @@ export class MotifsAll {
   });
 
   ngOnInit() {
+    document.addEventListener("focusin", this.logScroll);
+    const observer = new ResizeObserver(() => {
+      console.log("Page height:", document.documentElement.scrollHeight);
+    });
+
+    observer.observe(document.body);
     this.initialise();
   }
 
+  ngOnDestroy() {
+    document.removeEventListener("focusin", this.logScroll);
+  }
+
+  private logScroll = () => {
+    console.log("SCROLL:", {
+      scrollY: window.scrollY,
+      activeElement: document.activeElement,
+      documentHeight: document.documentElement.scrollHeight,
+    });
+  };
+
   async initialise() {
-    this.initialising = true;
+    this.searchForm.searchTerm().value.set("");
     await this.motifStore.initialise();
-    this.initialising = false;
 
     const searchTerm = this.route.snapshot.paramMap.get("searchterm");
     if (!searchTerm) return;
     this.searchForm.searchTerm().value.set(searchTerm);
+
     this.motifStore.search(searchTerm, true);
   }
 
@@ -205,7 +225,7 @@ export class MotifsAll {
   }
 
   collapseAll() {
-    if (!this.motifStore.$searchActive()) this.motifStore.collapseAll();
+    this.motifStore.collapseAll();
   }
 
   toggleColourCoding() {
@@ -351,7 +371,7 @@ export class MotifsAll {
           motifCode: this.editForm.motifCode().value(),
           motifName: this.editForm.motifName().value(),
           description: this.editForm.description().value(),
-          hasChildren: currentNode.hasChildren,
+          childCount: currentNode.childCount,
           motifSagas: this.editForm.sagas().value(),
         });
       }

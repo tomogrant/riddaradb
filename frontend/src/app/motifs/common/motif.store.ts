@@ -16,42 +16,55 @@ export class MotifStore {
   motifModalService = inject(MotifModalService);
   sagaService = inject(SagaService);
 
-  $sagaTitles = signal(new Array<ISagaVersionTitleDto>());
+  $sagaTitles = signal<Array<ISagaVersionTitleDto>>(new Array<ISagaVersionTitleDto>());
 
   //Motifs without parents; entry-points into the trees
-  $rootIds = signal(new Set<number>());
+  $rootIds = signal<Set<number>>(new Set<number>());
 
   //Normalised store of motifs
-  $motifNodes = signal(new Map<number, IMotif>());
+  $motifNodes = signal<Map<number, IMotif>>(new Map<number, IMotif>());
 
-  $pinnedNodes = signal(new Map<number, IMotif>());
+  $pinnedNodes = signal<Map<number, IMotif>>(new Map<number, IMotif>());
 
   //Sets to control which nodes are displayed
-  $expandedNodes = signal(new Set<number>());
-  $visibleNodes = signal(new Set<number>());
-  $resultNodes = signal(new Set<number>());
+  $expandedNodes = signal<Set<number>>(new Set<number>());
+  $visibleNodes = signal<Set<number>>(new Set<number>());
+  $resultNodes = signal<Set<number>>(new Set<number>());
 
   //UI state
-  $searchActive = signal(false);
-  $searchTerm = signal("");
-  $searchMessage = signal("");
-  $showColourCoding = signal(false);
+  $searchActive = signal<boolean>(false);
+  $searchTerm = signal<string>("");
+  $searchMessage = signal<string>("");
+  $showColourCoding = signal<boolean>(false);
 
-  $loading = signal(false);
+  $initialising = signal<boolean>(false);
+  $requestLoading = signal<boolean>(false);
+  $searchLoading = signal<boolean>(false);
+  $expandLoading = signal<boolean>(false);
+
+  $storeInitialised = signal<boolean>(false);
 
   async initialise() {
     this.collapseAll();
     this.clearVisibleNodes();
     this.clearResultNodes();
-
-    await this.getRootMotifs();
-    await this.getSagaTitles();
-
     this.$searchActive.set(false);
     this.$searchTerm.set("");
     this.$searchMessage.set("");
     this.$showColourCoding.set(false);
-    this.$pinnedNodes.set(await this.retrievePinnedNodesFromLocalStorage());
+
+    if (!this.$storeInitialised()) {
+      this.$initialising.set(true);
+
+      await this.getRootMotifs();
+      await this.getSagaTitles();
+
+      this.$pinnedNodes.set(await this.retrievePinnedNodesFromLocalStorage());
+
+      this.$initialising.set(false);
+
+      this.$storeInitialised.set(true);
+    }
   }
 
   //Gets pinned node IDs from local storage and retrieves them from the database.
@@ -105,10 +118,6 @@ export class MotifStore {
     this.$pinnedNodes.update((current) => {
       const next = new Map(current);
       const node = this.$motifNodes().get(nodeId);
-
-      console.log("Node ID: " + nodeId);
-      console.log(node?.motifCode + " is present in central motifNodes store");
-      console.log("Node is present in $pinnedNodes: " + next.has(nodeId));
 
       //Node is no longer in the motif store; remove from pinned nodes
       if (!node || !node.id) {
@@ -200,15 +209,20 @@ export class MotifStore {
   }
 
   async search(searchTerm: string, exactSearch: boolean) {
+    this.$searchLoading.set(true);
+
     let results: IMotifSearchResult[] = [];
 
     try {
+      //Search for paths to motif search results
       results = exactSearch
         ? await firstValueFrom(this.motifService.searchMotifsExactMatch(searchTerm))
         : await firstValueFrom(this.motifService.searchMotifs(searchTerm));
     } catch (err: unknown) {
+      //If server returns a 400 error response, too many results returned
       if (err instanceof HttpErrorResponse && err.status === 400) {
         console.log(JSON.stringify(err));
+        this.$searchLoading.set(false);
         this.$searchMessage.set("Too many results. Please refine your search.");
         return;
       }
@@ -216,9 +230,11 @@ export class MotifStore {
       throw err;
     }
 
-    results.length
-      ? this.$searchMessage.set(`${results.length} results.`)
-      : this.$searchMessage.set("No results found.");
+    if (!results.length) {
+      this.$searchLoading.set(false);
+      this.$searchMessage.set("No results found.");
+      return;
+    }
 
     this.$searchActive.set(true);
     this.$searchTerm.set(searchTerm);
@@ -227,9 +243,23 @@ export class MotifStore {
     this.clearVisibleNodes();
     this.clearResultNodes();
 
+    const motifsToFetch: Set<number> = new Set();
+    results.forEach((result) => {
+      if (!this.$motifNodes().has(result.searchResultId)) {
+        motifsToFetch.add(result.searchResultId);
+      }
+      result.searchResultPath.forEach((id) => {
+        if (!this.$motifNodes().has(id)) {
+          motifsToFetch.add(id);
+        }
+      });
+    });
+
+    const searchResultMotifNodes = await firstValueFrom(this.motifService.getMotifsByIds(Array.from(motifsToFetch)));
+
     for (const result of results) {
-      //Loads all ancestors and makes them visible
-      await this.loadAncestors(result.searchResultPath);
+      //Retrieves ancestors in
+      this.insertAncestors(result.searchResultPath, searchResultMotifNodes);
 
       //Finally, makes the result node visible
       this.$visibleNodes.update((current) => {
@@ -244,15 +274,17 @@ export class MotifStore {
         return next;
       });
     }
+
+    this.$searchMessage.set(`${results.length} results.`);
+    this.$searchLoading.set(false);
   }
 
-  async loadAncestors(ancestorIds: number[]): Promise<void> {
+  insertAncestors(ancestorIds: number[], searchResultMotifNodes: IMotif[]) {
     for (const ancestorId of ancestorIds) {
-      //The first node is a root node, and is already loaded (getRootMotifs).
-      //It is made visible, and its child/children are loaded.
+      //Starting with the root note (oldest ancestor), load
       const node = this.getMotifNode(ancestorId);
       if (!node) {
-        console.log("NODE " + ancestorId + " MISSING!");
+        console.log("Node " + ancestorId + " not present in motif store!");
         return;
       }
 
@@ -268,10 +300,51 @@ export class MotifStore {
         return next;
       });
 
-      if (node.hasChildren && !node.childIds) {
-        await this.getMotifChildren(ancestorId);
+      //If node has children,
+      //1. retrieve these from the searchResultMotifNodes.
+      //2. add them to $motifNodes if they have not been added already.
+      //3. merge them into the parent's child nodes.
+      if (node.childCount) {
+        this.insertMotifChildren(ancestorId, searchResultMotifNodes);
       }
     }
+  }
+
+  insertMotifChildren(id: number, searchResultMotifNodes: IMotif[]) {
+    //Loads, sorts and adds children to $motifNodes
+
+    const children: IMotif[] = searchResultMotifNodes.filter((motif) => motif.parentId === id);
+
+    this.$motifNodes.update((current) => {
+      const next = new Map(current);
+
+      if (!children.length) return next;
+
+      const sortedChildren = children.sort((a, b) => a.motifCode.localeCompare(b.motifCode));
+
+      //Add child node to $motifNodes if not present already
+      for (var child of sortedChildren) {
+        if (child.id == null) return next;
+        if (!next.get(child.id)) {
+          next.set(child.id, child);
+        }
+      }
+
+      //Merge child node into parent's child nodes
+      const parentMotif = next.get(id);
+
+      if (parentMotif) {
+        const existingChildIds = parentMotif.childIds ?? [];
+        const fetchedChildIds = sortedChildren.map((child) => child.id).filter((childId) => childId != null);
+
+        next.set(id, {
+          ...parentMotif,
+          childIds: [...new Set([...existingChildIds, ...fetchedChildIds])],
+        });
+      }
+
+      return next;
+    });
   }
 
   clearVisibleNodes() {
@@ -377,7 +450,7 @@ export class MotifStore {
         next.set(parentMotifNode.id, {
           ...parentMotifNode,
           childIds: updatedChildIds,
-          hasChildren: true,
+          childCount: parentMotifNode.childCount,
         });
       }
 
@@ -434,10 +507,10 @@ export class MotifStore {
   }
 
   postMotifNode(newMotifNode: IMotif) {
-    this.$loading.set(true);
+    this.$requestLoading.set(true);
     this.motifService.postMotif(newMotifNode).subscribe({
       next: (postedMotif) => {
-        this.$loading.set(false);
+        this.$requestLoading.set(false);
         this.motifModalService.closeModal();
         console.log("motif posted: " + postedMotif);
         this.updateMotifNode(postedMotif);
@@ -453,23 +526,23 @@ export class MotifStore {
         }
       },
       error: (err) => {
-        this.$loading.set(false);
+        this.$requestLoading.set(false);
         console.log("Error posting motif: " + JSON.stringify(err));
       },
     });
   }
 
   putMotifNode(updatedMotifNode: IMotif) {
-    this.$loading.set(true);
+    this.$requestLoading.set(true);
     this.motifService.updateMotif(updatedMotifNode).subscribe({
       next: (updatedMotif) => {
-        this.$loading.set(false);
+        this.$requestLoading.set(false);
         this.motifModalService.closeModal();
         //Retain children after edit. Children are not returned by backend API
         //and field 'hasChildren' is not set until after a following get request.
         //This is a shortcut.
         const motif = updatedMotif;
-        motif.hasChildren = updatedMotifNode.hasChildren;
+        motif.childCount = updatedMotifNode.childCount;
         motif.childIds = updatedMotifNode.childIds;
         this.updateMotifNode(motif);
 
@@ -483,10 +556,10 @@ export class MotifStore {
 
         this.editPinnedNode(updatedMotif);
       },
-      error: err => {
-        this.$loading.set(false);
+      error: (err) => {
+        this.$requestLoading.set(false);
         console.log("Problem updating motif: " + JSON.stringify(err));
-      }
+      },
     });
   }
 
@@ -530,7 +603,7 @@ export class MotifStore {
 
         if (!updatedParent.childIds?.length) {
           this.collapse(updatedParent.id);
-          updatedParent.hasChildren = false;
+          updatedParent.childCount = 0;
         }
 
         next.set(updatedParent.id, updatedParent);
@@ -561,10 +634,14 @@ export class MotifStore {
   }
 
   async getMotifChildren(id: number): Promise<void> {
-    //Loads, sorts and adds children to $motifNodes
+    this.$expandLoading.set(true);
     const children = await firstValueFrom(this.motifService.getChildren(id)).catch((error) => {
       console.log(JSON.stringify(error));
+      this.$expandLoading.set(false);
     });
+
+    this.$expandLoading.set(false);
+
     this.$motifNodes.update((current) => {
       const next = new Map(current);
 
@@ -574,7 +651,10 @@ export class MotifStore {
 
       for (var child of sortedChildren) {
         if (child.id == null) return next;
-        next.set(child.id, child);
+        //Only add new children to avoid overwriting existing nodes and potential grandchildren
+        if (!next.has(child.id)) {
+          next.set(child.id, child);
+        }
       }
 
       //Assigns child id(s) to parent motif
@@ -583,7 +663,7 @@ export class MotifStore {
       if (parentMotif) {
         next.set(id, {
           ...parentMotif,
-          childIds: sortedChildren.map((child) => child.id).filter((id) => id != null),
+          childIds: [...new Set(sortedChildren.map((child) => child.id).filter((id) => id != null))],
         });
       }
 

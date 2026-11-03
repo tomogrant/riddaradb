@@ -1,3 +1,4 @@
+import { NumberSymbol } from "@angular/common";
 import { IMotifSaga } from "./IMotifSaga";
 
 export interface IMotif {
@@ -7,6 +8,6 @@ export interface IMotif {
   description: string;
   parentId: number | null;
   childIds?: number[];
-  hasChildren?: boolean;
+  childCount?: number;
   motifSagas: IMotifSaga[];
 }

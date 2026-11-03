@@ -1,5 +1,5 @@
 @if (!$searchActive() || ($searchActive() && $visible())) {
-  <div class="row mb-3">
+  <div class="row mb-2">
     <div class="col-12 col-xl-4 col-lg-5 col-md-6 col-sm-9">
       <div
         class="card custom-shadow"
@@ -98,7 +98,7 @@
               </a>
             </span>
 
-            @if (!$node()?.hasChildren || $isAdmin()) {
+            @if (!$node()?.childCount || $isAdmin()) {
               <span>
                 <a
                   type="button"
@@ -112,7 +112,7 @@
           }
 
           <span class="toggle-slot">
-            <a
+            <button
               type="button"
               data-testid="toggle-pinned-button"
               class="btn btn-sm btn-outline-secondary me-1"
@@ -123,20 +123,21 @@
               } @else {
                 <i class="bi bi-pin-angle"></i>
               }
-            </a>
+            </button>
 
-            @if ($node()?.hasChildren && !$searchActive()) {
-              <a
+            @if ($node()?.childCount && !$searchActive()) {
+              <button
                 type="button"
                 data-testid="toggle-expand-button"
                 class="btn btn-sm btn-outline-secondary"
-                (click)="toggleExpand()">
+                (click)="toggleExpand()"
+                [disabled]="$expandLoading()">
                 @if ($expanded()) {
                   <i class="bi bi-dash-lg"></i>
                 } @else {
                   <i class="bi bi-plus-lg"></i>
                 }
-              </a>
+              </button>
             }
           </span>
         </div>
@@ -147,7 +148,7 @@
   @if ($expanded()) {
     <div class="child-wrapper child-anim">
       @if ($node()?.childIds) {
-        @for (child of $node()?.childIds; track $index) {
+        @for (child of $node()?.childIds; track child) {
           <app-motif-node [$nodeId]="child" [$depth]="$depth() + 1"></app-motif-node>
         }
       }
