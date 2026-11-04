@@ -38,14 +38,14 @@ public class SagaVersionMapper {
                             sagaVersionMotifEntity.getInBoberg()));
         }
 
-        sagaVersionResponseDto.setCharacters(sagaVersionEntity.getCharacterEntities()
+        sagaVersionResponseDto.setCharacterNames(sagaVersionEntity.getCharacterEntities()
                 .stream()
-                .map(characterMapper::mapToDto)
+                .map(characterMapper::mapToNameDto)
                 .collect(Collectors.toSet()));
 
-        sagaVersionResponseDto.setLocations(sagaVersionEntity.getLocationEntities()
+        sagaVersionResponseDto.setLocationNames(sagaVersionEntity.getLocationEntities()
                 .stream()
-                .map(locationMapper::mapToDto)
+                .map(locationMapper::mapToNameDto)
                 .collect(Collectors.toSet()));
 
         return sagaVersionResponseDto;

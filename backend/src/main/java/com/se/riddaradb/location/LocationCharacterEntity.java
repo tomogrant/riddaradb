@@ -10,12 +10,12 @@ public class LocationCharacterEntity {
     @EmbeddedId
     private LocationCharacterKey id = new LocationCharacterKey();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("locationId")
     @JoinColumn(name="location_id")
     private LocationEntity locationEntity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("characterId")
     @JoinColumn(name="character_id")
     private CharacterEntity characterEntity;

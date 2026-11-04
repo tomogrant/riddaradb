@@ -15,7 +15,7 @@ import { Component, computed, inject, OnInit } from "@angular/core";
 import { ActivatedRoute, RouterModule, Router } from "@angular/router";
 import { CommonModule, formatDate } from "@angular/common";
 import { QuillModule } from "ngx-quill";
-import { IBib, PublicationType } from "../../bib/common/IBib";
+import { PublicationType } from "../../bib/common/IBib";
 import { BibService } from "../../bib/common/bib.service";
 import { SagaService } from "../common/saga.service";
 import { SagaMapper } from "../common/saga.mapper";
@@ -32,6 +32,10 @@ import { MsService } from "../../ms/common/ms.service";
 import { ISagaTitleDto } from "../common/ISagaTitleDto";
 import { PageHeader } from "../../page-header/page-header";
 import { HttpErrorResponse } from "@angular/common/http";
+import { CharactersService } from "../../characters/characters.service";
+import { LocationsService } from "../../locations/locations.service";
+import { ICharacterName } from "../../characters/ICharacterName";
+import { ILocationName } from "../../locations/ILocationName";
 
 @Component({
   selector: "app-saga-entry",
@@ -49,6 +53,8 @@ export class SagaSingle implements OnInit {
   private router = inject(Router);
   private pageTitle = inject(Title);
   private authService = inject(AuthService);
+  private charactersService = inject(CharactersService);
+  private locationsService = inject(LocationsService);
 
   $loggedIn = computed(() => this.authService.$loggedIn());
   $isAdmin = computed(() => this.authService.$isAdmin());
@@ -65,17 +71,20 @@ export class SagaSingle implements OnInit {
   sagaVersionTrackingId: number = 0;
   msTrackingId: number = 0;
 
-  bibs: IBib[] = [];
   bibVms: IBibVm[] = [];
   filteredBibVms: IBibVm[] = [];
-
   motifs: IMotif[] = [];
-
   manuscripts: IMs[] = [];
+  characters: ICharacterName[] = [];
+  locations: ILocationName[] = [];
+
   filteredMsForms: {
     form: FormGroup;
     index: number;
   }[] = [];
+
+  filteredLocations: Map<number, ILocationName[]> = new Map();
+  filteredCharacters: Map<number, ICharacterName[]> = new Map();
 
   showValidationErrors: boolean = false;
 
@@ -88,43 +97,6 @@ export class SagaSingle implements OnInit {
   initialising: boolean = false;
   saveAsDraftLoading: boolean = false;
   publishLoading: boolean = false;
-
-  //---------------
-  //  INIT
-  //---------------
-
-  ngOnInit() {
-    this.initialising = true;
-    const mode = this.route.snapshot.paramMap.get("mode");
-
-    //ADD MODE
-    if (mode == "add") {
-      this.addSaga();
-      this.getSagaTitles();
-      this.getBibs();
-      this.getManuscripts();
-    } else {
-      this.getSaga();
-    }
-
-    for (let sagaDate of Object.values(SagaDate)) {
-      this.sagaDatesUi.push(this.mapDateToUi(sagaDate));
-    }
-    //Filters out "UNDEFINED"
-    this.sagaDatesUi = this.sagaDatesUi.filter((sagaDate) => sagaDate.startsWith("1"));
-
-    this.bibFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
-      next: (value) => this.updateBibFilter(value ? String(value).trim().toLowerCase() : ""),
-    });
-
-    this.msFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
-      next: (value) => this.updateMsFilter(value ? String(value).trim().toLowerCase() : ""),
-    });
-  }
-
-  //---------------
-  //  FORMS
-  //---------------
 
   editForm = new FormGroup({
     id: new FormControl<number | null>({ value: null, disabled: true }),
@@ -188,6 +160,40 @@ export class SagaSingle implements OnInit {
     return this.editForm.controls.msFilter;
   }
 
+  //---------------
+  //  INIT
+  //---------------
+
+  ngOnInit() {
+    this.initialising = true;
+    const mode = this.route.snapshot.paramMap.get("mode");
+
+    //ADD MODE
+    if (mode == "add") {
+      this.addSaga();
+    } else {
+      this.getSaga();
+    }
+
+    for (let sagaDate of Object.values(SagaDate)) {
+      this.sagaDatesUi.push(this.mapDateToUi(sagaDate));
+    }
+    //Filters out "UNDEFINED"
+    this.sagaDatesUi = this.sagaDatesUi.filter((sagaDate) => sagaDate.startsWith("1"));
+
+    this.bibFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
+      next: (value) => this.updateBibFilter(value ? String(value).trim().toLowerCase() : ""),
+    });
+
+    this.msFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
+      next: (value) => this.updateMsFilter(value ? String(value).trim().toLowerCase() : ""),
+    });
+  }
+
+  //---------------
+  //  FORMS
+  //---------------
+
   populateSagaVersionForms() {
     this.sagaVersionForms.clear();
     this.sagaEntry.sagaVersions.forEach((sagaVersion) => {
@@ -196,7 +202,7 @@ export class SagaSingle implements OnInit {
   }
 
   createSagaVersionForm(sagaVersion?: ISagaVersionVm) {
-    return new FormGroup({
+    const form = new FormGroup({
       trackingId: new FormControl<number>(this.sagaVersionTrackingId++, { nonNullable: true }),
       id: new FormControl<number | null>({ value: sagaVersion ? sagaVersion.id : null, disabled: true }),
       title: new FormControl<string>(sagaVersion ? sagaVersion.title : "", {
@@ -212,7 +218,29 @@ export class SagaSingle implements OnInit {
         validators: this.dateNotSelected(),
       }),
       description: new FormControl<string>(sagaVersion ? sagaVersion.description : "", { nonNullable: true }),
+      locationFilter: new FormControl<string>("", { nonNullable: true }),
+      locationIds: new FormControl<number[]>(sagaVersion ? sagaVersion.characterNames.map((char) => char.id) : [], {
+        nonNullable: true,
+      }),
+      characterFilter: new FormControl<string>("", { nonNullable: true }),
+      characterIds: new FormControl<number[]>(sagaVersion ? sagaVersion.characterNames.map((char) => char.id) : [], {
+        nonNullable: true,
+      }),
     });
+
+    form.controls.locationFilter.valueChanges
+      .pipe(debounceTime(250), distinctUntilChanged())
+      .subscribe(() => this.updateLocationFilter(form));
+
+    this.updateLocationFilter(form);
+
+    form.controls.characterFilter.valueChanges
+      .pipe(debounceTime(250), distinctUntilChanged())
+      .subscribe(() => this.updateCharacterFilter(form));
+
+    this.updateCharacterFilter(form);
+
+    return form;
   }
 
   populateMsForms() {
@@ -227,12 +255,12 @@ export class SagaSingle implements OnInit {
     this.updateMsFilter();
   }
 
-  createMsForm(ms: IMs) {
+  createMsForm(ms: IMs): FormGroup {
     const msInSaga = this.sagaEntry.manuscripts.find((msDto) => msDto.msId == ms.id);
     const selected = !!msInSaga;
 
     return new FormGroup({
-      trackingId: new FormControl<number>({ value: this.sagaVersionTrackingId++, disabled: true }),
+      trackingId: new FormControl<number>({ value: this.msTrackingId++, disabled: true }),
       msId: new FormControl<number | null>({ value: ms.id, disabled: true }),
       shelfmark: new FormControl<string>({ value: ms.shelfmark, disabled: true }, { nonNullable: true }),
       date: new FormControl<string>({ value: ms.date, disabled: true }, { nonNullable: true }),
@@ -378,6 +406,8 @@ export class SagaSingle implements OnInit {
       date: SagaDate.UNDEFINED,
       sagaId: 0,
       sagaMotifs: [],
+      characterNames: [],
+      locationNames: [],
     };
   }
 
@@ -389,7 +419,7 @@ export class SagaSingle implements OnInit {
     const ids: number[] = this.bibIds.value;
 
     //If bibIds form includes id, filter it out. If not, add it.
-    this.bibIds.setValue(ids.includes(id) ? ids.filter((e) => e !== id) : [...ids, id]);
+    this.bibIds.setValue(ids.includes(id) ? ids.filter((idsInForm) => idsInForm !== id) : [...ids, id]);
   }
 
   updateBibFilter(searchTerm: string = "") {
@@ -401,9 +431,70 @@ export class SagaSingle implements OnInit {
   updateMsFilter(searchTerm: string = "") {
     this.filteredMsForms = this.msForms.controls
       //Maps MS form and its index into object corresponding with filteredMsForms.
+      //Index is the second argument of map().
       .map((form, index) => ({ form: form, index: index }))
       //Filter to only include those MS forms whose shelfmark matches query
       .filter((form) => String(form.form.get("shelfmark")?.value).trim().toLowerCase().includes(searchTerm));
+  }
+
+  locationChecked(sagaVersionForm: FormGroup, locationId: number) {
+    const locationsInForm = sagaVersionForm.get("locationIds")?.value;
+    return locationsInForm ? locationsInForm.includes(locationId) : false;
+  }
+
+  toggleLocation(sagaVersionForm: FormGroup, locationId: number) {
+    const locationsInForm = sagaVersionForm.get("locationIds")?.value as number[];
+
+    if (!locationsInForm) return;
+
+    //If ID is present in form, remove it; otherwise, add it
+    sagaVersionForm
+      .get("locationIds")
+      ?.setValue(
+        locationsInForm.includes(locationId)
+          ? locationsInForm.filter((id) => id !== locationId)
+          : [...locationsInForm, locationId],
+      );
+  }
+
+  updateLocationFilter(locationForm: FormGroup) {
+    const trackingId = locationForm.get("trackingId")!.value;
+    const searchTerm = String(locationForm.get("locationFilter")!.value).trim().toLowerCase();
+
+    this.filteredLocations.set(
+      trackingId,
+      this.locations.filter((loc) => loc.name.includes(searchTerm) || loc.translation.includes(searchTerm)),
+    );
+  }
+
+  characterChecked(sagaVersionForm: FormGroup, characterId: number) {
+    const charactersInForm = sagaVersionForm.get("characterIds")?.value;
+    return charactersInForm ? charactersInForm.includes(characterId) : false;
+  }
+
+  toggleCharacter(sagaVersionForm: FormGroup, characterId: number) {
+    const charactersInForm = sagaVersionForm.get("characterIds")?.value as number[];
+
+    if (!charactersInForm) return;
+
+    //If ID is present in form, remove it; otherwise, add it
+    sagaVersionForm
+      .get("characterIds")
+      ?.setValue(
+        charactersInForm.includes(characterId)
+          ? charactersInForm.filter((id) => id !== characterId)
+          : [...charactersInForm, characterId],
+      );
+  }
+
+  updateCharacterFilter(locationForm: FormGroup) {
+    const trackingId = locationForm.get("trackingId")!.value;
+    const searchTerm = String(locationForm.get("characterFilter")!.value).trim().toLowerCase();
+
+    this.filteredCharacters.set(
+      trackingId,
+      this.characters.filter((char) => char.name.includes(searchTerm)),
+    );
   }
 
   mapDateToUi(sagaDate: SagaDate) {
@@ -503,6 +594,11 @@ export class SagaSingle implements OnInit {
   }
 
   removeSagaVersionForm(i: number) {
+    const form = this.sagaVersionForms.at(i);
+    const trackingId = form.get("trackingId")!.value;
+
+    this.filteredLocations.delete(trackingId);
+    this.filteredCharacters.delete(trackingId);
     this.sagaVersionForms.removeAt(i);
   }
 
@@ -521,6 +617,7 @@ export class SagaSingle implements OnInit {
   }
 
   addSaga() {
+    this.getSupportingData();
     this.mode = Mode.ADD;
     this.sagaEntry = this.initialiseSaga();
     this.showValidationErrors = false;
@@ -622,36 +719,48 @@ export class SagaSingle implements OnInit {
       }));
 
     //Fill VM saga versions
-    const sagaVersions: ISagaVersionVm[] = [];
+
+    let sagaVersions: ISagaVersionVm[] = [];
 
     for (var i = 0; i < this.sagaVersionForms.length; i++) {
       const sagaVersionForm = this.sagaVersionForms.controls[i];
       if (!sagaVersionForm) continue;
 
-      const newSagaVersion = this.initialiseSagaVersion();
-      sagaVersions.push(newSagaVersion);
+      const sagaVersion = this.initialiseSagaVersion();
 
-      const sagaVersionFormId = sagaVersionForm.get("id");
-      if (!sagaVersionFormId) sagaVersions[i].id = null;
-      else sagaVersions[i].id = sagaVersionFormId.getRawValue();
+      const sagaVersionFormId = sagaVersionForm.controls["id"];
+      if (!sagaVersionFormId) sagaVersion.id = null;
+      else sagaVersion.id = sagaVersionFormId.getRawValue();
 
       const sagaVersionFormTitle = sagaVersionForm.get("title");
-      if (sagaVersionFormTitle) sagaVersions[i].title = sagaVersionFormTitle.value;
+      sagaVersion.title = sagaVersionFormTitle ? sagaVersionFormTitle.value : "";
 
       const sagaVersionFormAbbreviation = sagaVersionForm.get("abbreviation");
-      if (sagaVersionFormAbbreviation) sagaVersions[i].abbreviation = sagaVersionFormAbbreviation.value;
+      sagaVersion.abbreviation = sagaVersionFormAbbreviation ? sagaVersionFormAbbreviation.value : "";
 
       const sagaVersionFormDescription = sagaVersionForm.get("description");
-      if (!sagaVersionFormDescription) sagaVersions[i].description = "";
-      else
-        sagaVersions[i].description = String(sagaVersionFormDescription.value).replaceAll(
-          /((?:&nbsp;)*)&nbsp;/g,
-          "$1 ",
-        );
+      sagaVersion.description = sagaVersionFormDescription
+        ? String(sagaVersionFormDescription.value).replaceAll(/((?:&nbsp;)*)&nbsp;/g, "$1 ")
+        : "";
 
       const sagaVersionFormDate = sagaVersionForm.get("date");
-      if (!sagaVersionFormDate) sagaVersions[i].date = SagaDate.UNDEFINED;
-      else sagaVersions[i].date = this.mapDateFromUi(sagaVersionFormDate.value);
+      sagaVersion.date = sagaVersionFormDate ? this.mapDateFromUi(sagaVersionFormDate.value) : SagaDate.UNDEFINED;
+
+      const sagaVersionFormLocationIds: number[] = sagaVersionForm.get("locationIds")?.value ?? [];
+      //Gets locations corresponding to IDs; filters out undefines; returns shallow copies
+      sagaVersion.locationNames = sagaVersionFormLocationIds
+        .map((id) => this.locations.find((loc) => loc.id === id))
+        .filter((loc) => loc !== undefined)
+        .map((loc) => ({ ...loc }));
+
+      const sagaVersionFormCharacterIds: number[] = sagaVersionForm.get("characterIds")?.value ?? [];
+      //Gets locations corresponding to IDs; filters out undefines; returns shallow copies
+      sagaVersion.characterNames = sagaVersionFormCharacterIds
+        .map((id) => this.characters.find((char) => char.id === id))
+        .filter((char) => char !== undefined)
+        .map((char) => ({ ...char }));
+
+      sagaVersions.push(sagaVersion);
     }
 
     this.sagaEntry.sagaVersions = sagaVersions;
@@ -672,9 +781,8 @@ export class SagaSingle implements OnInit {
     //Create sorted list of bibliography entry VMs
     this.bibService.getBibEntries().subscribe({
       next: (bibEntries) => {
-        this.bibs = bibEntries;
         this.bibVms = [];
-        this.bibs.forEach((bib) => this.bibVms.push(this.bibMapper.mapDtoToVm(bib)));
+        bibEntries.forEach((bib) => this.bibVms.push(this.bibMapper.mapDtoToVm(bib)));
         this.bibVms.sort((a, b) => a.bibliographyEntry.localeCompare(b.bibliographyEntry));
         this.updateBibFilter();
       },
@@ -699,6 +807,35 @@ export class SagaSingle implements OnInit {
     });
   }
 
+  getCharacterNames() {
+    this.charactersService.getCharacterNames().subscribe({
+      next: (characterNames) => {
+        this.characters = characterNames.sort((a, b) => a.name.localeCompare(b.name));
+
+        //Filter might have been initialised before characters are fetched; reset here
+        this.sagaVersionForms.controls.forEach((form) => this.updateCharacterFilter(form));
+      },
+      error: (err) => {
+        console.log("Error fetching character names: " + JSON.stringify(err));
+      },
+    });
+  }
+
+  getLocationNames() {
+    this.locationsService.getLocationNames().subscribe({
+      next: (locationNames) => {
+        console.log("Length of locations got: " + locationNames.length);
+        this.locations = locationNames.sort((a, b) => a.name.localeCompare(b.name));
+
+        //Filter might have been initialised before locations are fetched; reset here
+        this.sagaVersionForms.controls.forEach((form) => this.updateLocationFilter(form));
+      },
+      error: (err) => {
+        console.log("Error fetching location names: " + JSON.stringify(err));
+      },
+    });
+  }
+
   //READ
   getSaga() {
     const idParam = this.route.snapshot.paramMap.get("id");
@@ -711,9 +848,9 @@ export class SagaSingle implements OnInit {
           if (this.$loggedIn() || receivedEntry.published) {
             this.sagaEntry = this.sagaMapper.mapSagaResponseDtoToVm(receivedEntry);
             this.pageTitle.setTitle("riddaraDB - " + this.sagaEntry.title);
-            this.getSagaTitles();
-            this.getBibs();
-            this.getManuscripts();
+
+            this.getSupportingData();
+
             this.initialising = false;
           } else {
             console.log("User is not authorised to visit this saga page");
@@ -729,6 +866,14 @@ export class SagaSingle implements OnInit {
       console.log("Parameter is incorrect");
       this.navigateToSagasAllPage();
     }
+  }
+
+  getSupportingData() {
+    this.getSagaTitles();
+    this.getBibs();
+    this.getManuscripts();
+    this.getCharacterNames();
+    this.getLocationNames();
   }
 
   parameterValid(param: string | null): number | null {

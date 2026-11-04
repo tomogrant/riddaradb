@@ -33,4 +33,12 @@ public class LocationMapper {
 
         return locationDto;
     }
+
+    public LocationNameDto mapToNameDto(LocationEntity locationEntity){
+        return new LocationNameDto(
+                locationEntity.getId(),
+                locationEntity.getName(),
+                locationEntity.getTranslation()
+        );
+    }
 }

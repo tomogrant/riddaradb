@@ -19,6 +19,12 @@ public class LocationController {
         return locationService.getLocationEntries();
     }
 
+    @GetMapping("getlocationnames")
+    Collection<LocationNameDto> getLocationNames(){
+        return locationService.getLocationNameEntries();
+    }
+
+
     @GetMapping("getlocationbyid/{id}")
     LocationDto getLocationEntryById(@PathVariable int id){
         return locationService.getLocationEntryById(id);

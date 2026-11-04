@@ -10,12 +10,12 @@ public class SagaMsEntity {
     @EmbeddedId
     private SagaMsKey id = new SagaMsKey();
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("sagaId")
     @JoinColumn(name="saga_id")
     private SagaEntity sagaEntity;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("msId")
     @JoinColumn(name="ms_id")
     private MsEntity msEntity;

@@ -5,7 +5,7 @@
     <i>{{ sagaEntry.title }}</i> (<i>{{ sagaEntry.translatedTitle }}</i
     >)
     @if (!sagaEntry.published) {
-      <span style="font-variant: small-caps;">[draft]</span>
+      <span style="font-variant: small-caps">[draft]</span>
     }
   }
 </app-page-header>
@@ -470,8 +470,32 @@
                       </h2>
                       <div id="character-accordion" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                          <!-- Accordion body -->
-                          {{ sagaVersionForms.controls[0].get("title")?.value }}
+                          <div formArrayName="sagaVersionForms">
+                            <div [formGroupName]="0">
+                              <input
+                                type="text"
+                                class="form-control mb-4"
+                                formControlName="characterFilter"
+                                placeholder="Filter characters..." />
+                              @for (
+                                character of filteredCharacters.get(
+                                  sagaVersionForms.controls[0].get("trackingId")?.value ?? []
+                                );
+                                track $index
+                              ) {
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    [checked]="characterChecked(sagaVersionForms.controls[0], character.id)"
+                                    (change)="toggleCharacter(sagaVersionForms.controls[0], character.id)" />
+                                  <label class="form-check-label"
+                                    ><span>{{ character.name }}</span></label
+                                  >
+                                </div>
+                              }
+                            </div>
+                          </div>
                         </div>
                         <!-- End of accordion body -->
                       </div>
@@ -492,8 +516,32 @@
                       </h2>
                       <div id="location-accordion" class="accordion-collapse collapse">
                         <div class="accordion-body">
-                          <!-- Accordion body -->
-                          {{ sagaVersionForms.controls[0].get("title")?.value }}
+                          <div formArrayName="sagaVersionForms">
+                            <div [formGroupName]="0">
+                              <input
+                                type="text"
+                                class="form-control mb-4"
+                                formControlName="locationFilter"
+                                placeholder="Filter locations..." />
+                              @for (
+                                location of filteredLocations.get(
+                                  sagaVersionForms.controls[0].get("trackingId")?.value ?? []
+                                );
+                                track $index
+                              ) {
+                                <div class="form-check">
+                                  <input
+                                    class="form-check-input"
+                                    type="checkbox"
+                                    [checked]="locationChecked(sagaVersionForms.controls[0], location.id)"
+                                    (change)="toggleLocation(sagaVersionForms.controls[0], location.id)" />
+                                  <label class="form-check-label"
+                                    ><span>{{ location.name }}</span></label
+                                  >
+                                </div>
+                              }
+                            </div>
+                          </div>
                         </div>
                         <!-- End of accordion body -->
                       </div>
@@ -505,7 +553,9 @@
               </div>
             </div>
 
+            <!------------------------>
             <!-- SAGA VERSION FORMS -->
+            <!------------------------>
             <div formArrayName="sagaVersionForms">
               @for (
                 sagaVersionForm of sagaVersionForms.controls;
@@ -644,7 +694,28 @@
                             </h2>
                             <div [id]="'characters-accordion-' + i" class="accordion-collapse collapse">
                               <div class="accordion-body">
-                                {{ sagaVersionForm.get("title")?.value }}
+                                <input
+                                  type="text"
+                                  class="form-control mb-4"
+                                  formControlName="characterFilter"
+                                  placeholder="Filter characters..." />
+                                @for (
+                                  character of filteredCharacters.get(
+                                    sagaVersionForm.get("trackingId")?.value ?? []
+                                  );
+                                  track $index
+                                ) {
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      [checked]="characterChecked(sagaVersionForm, character.id)"
+                                      (change)="toggleCharacter(sagaVersionForm, character.id)" />
+                                    <label class="form-check-label"
+                                      ><span>{{ character.name }}</span></label
+                                    >
+                                  </div>
+                                }
                               </div>
                             </div>
                           </div>
@@ -664,7 +735,26 @@
                             </h2>
                             <div [id]="'location-accordion-' + i" class="accordion-collapse collapse">
                               <div class="accordion-body">
-                                {{ sagaVersionForm.get("title")?.value }}
+                                <input
+                                  type="text"
+                                  class="form-control mb-4"
+                                  formControlName="locationFilter"
+                                  placeholder="Filter locations..." />
+                                @for (
+                                  location of filteredLocations.get(sagaVersionForm.get("trackingId")?.value ?? []);
+                                  track $index
+                                ) {
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      [checked]="locationChecked(sagaVersionForm, location.id)"
+                                      (change)="toggleLocation(sagaVersionForm, location.id)" />
+                                    <label class="form-check-label"
+                                      ><span>{{ location.name }}</span></label
+                                    >
+                                  </div>
+                                }
                               </div>
                             </div>
                           </div>
@@ -755,11 +845,7 @@
       <div class="modal-body">Are you sure?</div>
       <div class="modal-footer">
         <button (click)="closeDeleteModal()" type="button" class="btn btn-secondary">Back</button>
-        <button
-          data-testid="delete-confirm-button"
-          (click)="deleteSaga()"
-          type="submit"
-          class="btn btn-danger">
+        <button data-testid="delete-confirm-button" (click)="deleteSaga()" type="submit" class="btn btn-danger">
           Delete
         </button>
       </div>

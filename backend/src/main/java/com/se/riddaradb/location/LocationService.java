@@ -38,7 +38,14 @@ public class LocationService {
         return locationRepository.findAll()
                 .stream()
                 .map(locationMapper::mapToDto)
-                .toList();
+                .collect(Collectors.toSet());
+    }
+
+    public Collection<LocationNameDto> getLocationNameEntries(){
+        return locationRepository.findAll()
+                .stream()
+                .map(locationMapper::mapToNameDto)
+                .collect(Collectors.toSet());
     }
 
     public LocationDto getLocationEntryById(int id){

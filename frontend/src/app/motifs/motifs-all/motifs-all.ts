@@ -125,26 +125,8 @@ export class MotifsAll {
   });
 
   ngOnInit() {
-    document.addEventListener("focusin", this.logScroll);
-    const observer = new ResizeObserver(() => {
-      console.log("Page height:", document.documentElement.scrollHeight);
-    });
-
-    observer.observe(document.body);
     this.initialise();
   }
-
-  ngOnDestroy() {
-    document.removeEventListener("focusin", this.logScroll);
-  }
-
-  private logScroll = () => {
-    console.log("SCROLL:", {
-      scrollY: window.scrollY,
-      activeElement: document.activeElement,
-      documentHeight: document.documentElement.scrollHeight,
-    });
-  };
 
   async initialise() {
     this.searchForm.searchTerm().value.set("");

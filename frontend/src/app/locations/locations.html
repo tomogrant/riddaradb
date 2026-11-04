@@ -12,21 +12,46 @@
             <th scope="col">Sagas</th>
             <th scope="col">Names</th>
             <th scope="col">Notes</th>
+            @if ($loggedIn()) {
+              <th>Options</th>
+            }
           </tr>
         </thead>
         <tbody>
-          @for (location of locations; track $index) {
+          @for (location of locationsDisplay; track $index) {
             <tr>
               <th scope="row">{{ location.name }}</th>
               <td>{{ location.translation }}</td>
               <td>{{ location.continent }}</td>
-              <td>@for (sagaVersionId of location.sagaVersionIds; track $index){
-                <span><i>{{sagaVersionTitleMap.get(sagaVersionId)?.title}}</i></span>
-                }</td>
-              <td>@for(locationCharacterDto of location.locationCharacterDtos; track $index){
-                <span>{{locationCharacterDto.characterName}}</span>
-                }</td>
+              <td>
+                @for (sagaVersion of location.sagaVersions; track $index) {
+                  <span
+                    ><i>{{ sagaVersion.abbreviation }}</i></span
+                  >
+                }
+              </td>
+              <td>
+                @for (locationCharacterDto of location.locationCharacterDtos; track $index) {
+                  <span>{{ locationCharacterDto.characterName }}</span>
+                }
+              </td>
               <td>{{ location.notes }}</td>
+              <td>
+                @if ($loggedIn()) {
+                  <div>
+                    <!-- Edit button -->
+                    <button
+                      data-testid="edit-button"
+                      type="button"
+                      style="margin-right: 0.25rem"
+                      class="btn btn-secondary btn-sm">
+                      Edit
+                    </button>
+                    <!-- Delete button -->
+                    <button data-testid="delete-button" type="button" class="btn btn-danger btn-sm">Delete</button>
+                  </div>
+                }
+              </td>
             </tr>
           }
         </tbody>

@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { tap, catchError, throwError } from "rxjs";
 import { ILocation } from "./ILocation";
+import { ILocationName } from "./ILocationName";
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +15,13 @@ export class LocationsService {
   getLocations(): Observable<ILocation[]> {
     return this.httpClient.get<ILocation[]>(`${this.locationMain}/getlocations`).pipe(
       tap((data) => console.log("All location data got: " + JSON.stringify(data))),
+      catchError(this.errorHandler),
+    );
+  }
+
+    getLocationNames(): Observable<ILocationName[]> {
+    return this.httpClient.get<ILocationName[]>(`${this.locationMain}/getlocationnames`).pipe(
+      tap((data) => console.log("All location name data got: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
   }

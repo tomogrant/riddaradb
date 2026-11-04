@@ -80,8 +80,8 @@ export class SagaMapper {
       description: vm.description,
       date: vm.date,
       sagaId: vm.sagaId,
-      characterIds: [],
-      locationIds: []
+      characterIds: vm.characterNames.map(char => char.id),
+      locationIds: vm.locationNames.map(loc => loc.id)
     };
   }
 
@@ -94,6 +94,8 @@ export class SagaMapper {
       date: dto.date,
       sagaId: dto.sagaId,
       sagaMotifs: dto.sagaMotifs,
+      characterNames: dto.characterNames,
+      locationNames: dto.locationNames
     };
   }
 }

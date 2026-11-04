@@ -31,6 +31,8 @@ export class Home {
     return this.editForm.controls.text;
   }
 
+  loading: boolean = false;
+
   ngOnInit() {
     this.landingService.getHomeText().subscribe({
       next: (receivedText) => {
@@ -65,18 +67,22 @@ export class Home {
   }
 
   saveText() {
+    this.loading = true;
     const textToSave: IText = {
       text: this.text.value.replaceAll(/((?:&nbsp;)*)&nbsp;/g, "$1 ")
     };
 
     this.landingService.saveHomeText(textToSave).subscribe({
       next: (data) => {
+        this.loading = false;
         this.homeText = { ...data };
         this.text.setValue(this.homeText.text);
         this.closeEditModal();
       },
       error: (err) => {
+        this.loading = false;
         console.log("Problem saving text: " + JSON.stringify(err));
+        this.closeEditModal();
       },
     });
   }

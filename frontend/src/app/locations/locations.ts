@@ -1,9 +1,11 @@
-import { Component, inject, OnInit } from "@angular/core";
+import { Component, computed, inject, OnInit } from "@angular/core";
 import { PageHeader } from "../page-header/page-header";
 import { ILocation } from "./ILocation";
 import { LocationsService } from "./locations.service";
 import { ISagaVersionTitleDto } from "../sagas/common/ISagaVersionTitleDto";
 import { SagaService } from "../sagas/common/saga.service";
+import { AuthService } from "../auth/auth.service";
+import { firstValueFrom } from "rxjs";
 
 @Component({
   selector: "app-locations",
@@ -12,40 +14,51 @@ import { SagaService } from "../sagas/common/saga.service";
   styleUrl: "./locations.css",
 })
 export class Locations implements OnInit {
-
   private locationsService = inject(LocationsService);
   private sagaService = inject(SagaService);
+  private authService = inject(AuthService);
+
+  $loggedIn = computed(() => this.authService.$loggedIn());
 
   locations: ILocation[] = [];
   sagaVersionTitles: ISagaVersionTitleDto[] = [];
   sagaVersionTitleMap: Map<number, ISagaVersionTitleDto> = new Map<number, ISagaVersionTitleDto>();
 
+  get locationsDisplay(){
+    return this.locations.map(location => ({
+        ...location,
+        sagaVersions: this.sagaVersionTitles.filter(version => location.sagaVersionIds.includes(version.id))
+      }));
+  }
+
   ngOnInit(): void {
-    this.getLocations();
-    this.getSagaVersionTitles();
+    this.initialise();
   }
 
-  getLocations(){
-    this.locationsService.getLocations().subscribe({
-      next: locations => {
-        this.locations = locations;
-      }, 
-      error: (err) => {
-        console.log("Problem retrieving locations: " + JSON.stringify(err.error));
-      }
-    });
+  async initialise() {
+    await this.getLocations();
+    await this.getSagaVersionTitles();
+
+    console.log(this.locationsDisplay);
   }
 
-  getSagaVersionTitles(){
-    this.sagaService.getSagaVersionTitles().subscribe({
-      next: sagaVersionTitles => {
-        sagaVersionTitles.forEach(title => {
-          this.sagaVersionTitleMap.set(title.id, title);
-        });      
-      },
-      error: err => {
-        console.log("Error fetching saga version titles: " + JSON.stringify(err));
-      }
+  async getLocations() {
+    const locations = await firstValueFrom(this.locationsService.getLocations()).catch((err) => {
+      console.log("Error fetching locations: " + JSON.stringify(err));
     });
+
+    if (locations) {
+      this.locations = locations;
+    }
+  }
+
+  async getSagaVersionTitles() {
+    const sagaVersionTitles = await firstValueFrom(this.sagaService.getSagaVersionTitles()).catch((err) => {
+      console.log("Error fatching sagas: " + JSON.stringify(err));
+    });
+
+    if (sagaVersionTitles) {
+      this.sagaVersionTitles = sagaVersionTitles;
+    }
   }
 }

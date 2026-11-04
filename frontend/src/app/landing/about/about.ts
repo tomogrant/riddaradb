@@ -31,6 +31,8 @@ export class About {
     return this.editForm.controls.text;
   }
 
+  loading: boolean = false;
+
   ngOnInit() {
     this.landingService.getAboutText().subscribe({
       next: (receivedText) => {
@@ -65,18 +67,23 @@ export class About {
   }
 
   saveText() {
+    this.loading = true;
+
     const textToSave: IText = {
       text: this.text.value.replaceAll(/((?:&nbsp;)*)&nbsp;/g, "$1 ")
     };
 
     this.landingService.saveAboutText(textToSave).subscribe({
       next: (data) => {
+        this.loading = false;
         this.aboutText = { ...data };
         this.text.setValue(this.aboutText.text);
         this.closeEditModal();
       },
       error: (err) => {
+        this.loading = false;
         console.log("Problem saving text: " + JSON.stringify(err));
+        this.closeEditModal();
       },
     });
   }

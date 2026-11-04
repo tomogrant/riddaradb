@@ -36,7 +36,14 @@ public class CharacterService {
         return characterRepository.findAll()
                 .stream()
                 .map(characterMapper::mapToDto)
-                .toList();
+                .collect(Collectors.toSet());
+    }
+
+    public Collection<CharacterNameDto> getCharacterNameEntries(){
+        return characterRepository.findAll()
+                .stream()
+                .map(characterMapper::mapToNameDto)
+                .collect(Collectors.toSet());
     }
 
     public CharacterDto getCharacterEntryById(int id){

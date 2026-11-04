@@ -33,4 +33,8 @@ public class CharacterMapper {
 
         return characterDto;
     }
+
+    public CharacterNameDto mapToNameDto(CharacterEntity characterEntity){
+        return new CharacterNameDto(characterEntity.getId(), characterEntity.getName());
+    }
 }

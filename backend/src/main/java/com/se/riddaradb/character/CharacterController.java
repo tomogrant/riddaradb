@@ -15,9 +15,15 @@ public class CharacterController {
     }
 
     @GetMapping("getcharacters")
-    Collection<CharacterDto> getCharacterEntry(){
+    Collection<CharacterDto> getCharacterEntries(){
         return characterService.getCharacterEntries();
     }
+
+    @GetMapping("getcharacternames")
+    Collection<CharacterNameDto> getCharacterNameEntries(){
+        return characterService.getCharacterNameEntries();
+    }
+
 
     @GetMapping("getcharacterbyid/{id}")
     CharacterDto getCharacterEntryById(@PathVariable int id){

@@ -1,3 +1,6 @@
+import { ICharacter } from "../../characters/ICharacter";
+import { ICharacterName } from "../../characters/ICharacterName";
+import { ILocationName } from "../../locations/ILocationName";
 import { ISagaMotif } from "./ISagaMotif";
 import { SagaDate } from "./SagaDate";
 
@@ -9,4 +12,6 @@ export interface ISagaVersionVm {
   date: SagaDate;
   sagaId: number;
   sagaMotifs: ISagaMotif[];
+  characterNames: ICharacterName[];
+  locationNames: ILocationName[];
 }

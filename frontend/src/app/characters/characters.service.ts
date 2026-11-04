@@ -3,6 +3,7 @@ import { Injectable } from "@angular/core";
 import { Observable } from "rxjs";
 import { tap, catchError, throwError } from "rxjs";
 import { ICharacter } from "./ICharacter";
+import { ICharacterName } from "./ICharacterName";
 
 @Injectable({
   providedIn: "root",
@@ -14,6 +15,13 @@ export class CharactersService {
   getCharacters(): Observable<ICharacter[]> {
     return this.httpClient.get<ICharacter[]>(`${this.characterMain}/getcharacters`).pipe(
       tap((data) => console.log("All character data got: " + JSON.stringify(data))),
+      catchError(this.errorHandler),
+    );
+  }
+
+  getCharacterNames(): Observable<ICharacterName[]> {
+    return this.httpClient.get<ICharacterName[]>(`${this.characterMain}/getcharacternames`).pipe(
+      tap((data) => console.log("All character name data got: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
   }
@@ -42,9 +50,7 @@ export class CharactersService {
   }
 
   deleteCharacter(id: number): Observable<null> {
-    return this.httpClient.delete<null>(`${this.characterMain}/deleteuser/${id}`).pipe(
-      catchError(this.errorHandler)
-    );
+    return this.httpClient.delete<null>(`${this.characterMain}/deleteuser/${id}`).pipe(catchError(this.errorHandler));
   }
 
   private errorHandler(error: HttpErrorResponse) {

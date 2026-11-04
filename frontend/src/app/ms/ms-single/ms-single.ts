@@ -117,6 +117,7 @@ export class MsSingle {
         },
         error: err => {
           console.log("Error getting MS: " + JSON.stringify(err.error));
+          this.initialising = false;
           this.navigateToMsAllPage();
         }
       });
