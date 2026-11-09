@@ -2,60 +2,450 @@
 
 <div class="card-body page-container">
   <div class="container">
-    <div class="table-responsive">
-      <table class="table">
-        <thead>
-          <tr>
-            <th scope="col">Placename</th>
-            <th scope="col">Translation</th>
-            <th scope="col">Continent</th>
-            <th scope="col">Sagas</th>
-            <th scope="col">Names</th>
-            <th scope="col">Notes</th>
-            @if ($loggedIn()) {
-              <th>Options</th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (location of locationsDisplay; track $index) {
-            <tr>
-              <th scope="row">{{ location.name }}</th>
-              <td>{{ location.translation }}</td>
-              <td>{{ location.continent }}</td>
-              <td>
-                @for (sagaVersion of location.sagaVersions; track $index) {
-                  <span
-                    ><i>{{ sagaVersion.abbreviation }}</i></span
-                  >
-                }
-              </td>
-              <td>
-                @for (locationCharacterDto of location.locationCharacterDtos; track $index) {
-                  <span>{{ locationCharacterDto.characterName }}</span>
-                }
-              </td>
-              <td>{{ location.notes }}</td>
-              <td>
-                @if ($loggedIn()) {
-                  <div>
-                    <!-- Edit button -->
-                    <button
-                      data-testid="edit-button"
-                      type="button"
-                      style="margin-right: 0.25rem"
-                      class="btn btn-secondary btn-sm">
-                      Edit
-                    </button>
-                    <!-- Delete button -->
-                    <button data-testid="delete-button" type="button" class="btn btn-danger btn-sm">Delete</button>
-                  </div>
-                }
-              </td>
-            </tr>
+    <div class="card p-3 custom-shadow-larger beige">
+      <div class="row">
+        <div class="col-12 col-md-9 col-lg-6">
+          <div class="input-group">
+            <input
+              type="text"
+              [formField]="$searchForm.searchTerm"
+              (input)="$currentPage.set(1)"
+              class="form-control"
+              placeholder="Filter locations..." />
+            <button
+              class="btn dropdown-toggle"
+              [class.btn-outline-success]="$continentFilterActive()"
+              [class.btn-outline-secondary]="!$continentFilterActive()"
+              type="button"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              aria-expanded="false"
+              >Continents
+            </button>
+            <ul class="dropdown-menu">
+              <form class="px-3 py-2">
+                <div class="dropdown-checkboxes">
+                  @for (continent of continentsUi; track $index) {
+                    <li>
+                      <input
+                        class="form-check-input mx-1"
+                        type="checkbox"
+                        (change)="toggleContinentFilter(continent)"
+                        [checked]="continentCheckboxChecked(continent)" />
+                      {{ continent }}
+                    </li>
+                  }
+                </div>
+                <button type="button" class="btn btn-danger btn-sm mt-2" (click)="clearContinentFilter()">
+                  Clear
+                </button>
+              </form>
+            </ul>
+            <button
+              class="btn dropdown-toggle"
+              [class.btn-outline-success]="$sagaVersionFilterActive()"
+              [class.btn-outline-secondary]="!$sagaVersionFilterActive()"
+              (click)="updateSagaVersionFormFilter('')"
+              type="button"
+              data-bs-toggle="dropdown"
+              data-bs-auto-close="outside"
+              aria-expanded="false">
+              Sagas
+            </button>
+            <ul class="dropdown-menu">
+              <!-- Reusing the saga version form filter here for convenience -->
+              <form class="px-3 py-2" [formGroup]="editForm">
+                <input
+                  type="text"
+                  class="form-control mb-2"
+                  formControlName="sagaVersionFormFilter"
+                  placeholder="Filter sagas..." />
+                <div class="dropdown-checkboxes">
+                  @for (saga of filteredSagaVersionTitles; track $index) {
+                    <li>
+                      <input
+                        class="form-check-input mx-1"
+                        type="checkbox"
+                        (change)="toggleSagaVersionFilter(saga.id)"
+                        [checked]="sagaVersionCheckboxChecked(saga.id)" />
+                      <i>{{ saga.title }}</i>
+                    </li>
+                  }
+                </div>
+                <button type="button" class="btn btn-danger btn-sm mt-2" (click)="clearSagaVersionFilter()">
+                  Clear
+                </button>
+              </form>
+            </ul>
+
+            <button type="button" class="btn btn-outline-danger" (click)="clearAllFilters()">Clear filters</button>
+          </div>
+        </div>
+        <div class="col">
+          @if ($loggedIn()) {
+            <button (click)="addLocation()" type="button" class="btn btn-outline-success bi bi-plus-lg"></button>
           }
-        </tbody>
-      </table>
+        </div>
+      </div>
+    </div>
+
+    @if (initialising) {
+      <div class="spinner-border spinner-border-lg ms-3 mt-3" role="status"> </div>
+    } @else {
+      <div class="table-responsive-md table-wrapper pt-3 mb-4">
+        <table class="table table-hover">
+          <thead>
+            <tr>
+              <th scope="col">Placename</th>
+              <th scope="col">Translation</th>
+              <th scope="col">Continent </th>
+              <th scope="col">Sagas </th>
+              <th scope="col">Names</th>
+              <th scope="col">Notes</th>
+              @if ($loggedIn()) {
+                <th>Options</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (location of $locationsPaginated(); track $index) {
+              <tr [id]="'entry-' + location.id" class="">
+                <td
+                  ><b>{{ location.name }}</b></td
+                >
+                <td>{{ location.translation }}</td>
+                <td>{{ mapContinentToUi(location.continent) }}</td>
+                <td>
+                  @for (sagaVersion of location.sagaVersions; track $index) {
+                    @if ($loggedIn() || sagaVersion.published) {
+                      <span>
+                        <a [routerLink]="['/sagas', sagaVersion.sagaId]">
+                          <i>{{ sagaVersion.abbreviation }}</i>
+                          @if (!sagaVersion.published) {
+                            <span style="font-variant: small-caps"> [draft]</span>
+                          }
+                        </a>
+                      </span>
+                      @if ($index + 1 < location.sagaVersions.length) {
+                        <span>, </span>
+                      }
+                    }
+                  }
+                </td>
+                <td>
+                  @for (locationCharacterDto of location.locationCharacterDtos; track $index) {
+                    <span>{{ locationCharacterDto.characterName }}</span>
+                  }
+                </td>
+                <td>{{ location.notes }}</td>
+                @if ($loggedIn()) {
+                  <td>
+                    <div>
+                      <!-- Edit button -->
+                      <button
+                        data-testid="edit-button"
+                        type="button"
+                        class="btn btn-outline-secondary btn-sm me-2 bi bi-pencil-fill"
+                        (click)="editLocation(location.id!)">
+                      </button>
+                      <!-- Delete button -->
+                      <button
+                        data-testid="delete-button"
+                        type="button"
+                        class="btn btn-outline-danger btn-sm bi bi-trash-fill"
+                        (click)="openDeleteModal(location.id!)"></button>
+                    </div>
+                  </td>
+                }
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <div class="row">
+      <div class="col-auto">
+        <div class="btn-group" role="group" aria-label="Table page nav buttons">
+          <button
+            type="button"
+            class="btn btn-primary bi bi-chevron-left"
+            [disabled]="this.$currentPage() === 1"
+            (click)="goToPage(this.$currentPage() - 1)"></button>
+          @for (page of $pagesIterable(); track $index) {
+            <button
+              type="button"
+              class="btn btn-outline-primary"
+              (click)="goToPage(page)"
+              [class.active]="page === this.$currentPage()"
+              >{{ page }}</button
+            >
+          }
+          <button
+            type="button"
+            class="btn btn-primary bi bi-chevron-right"
+            [disabled]="this.$currentPage() === this.$totalPages()"
+            (click)="goToPage(this.$currentPage() + 1)"></button>
+        </div>
+      </div>
+      <div class="col ms-1 mt-1">
+        <span>{{ $pageText() }}</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Edit modal-->
+<div
+  class="modal fade"
+  id="addEditLocation"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">
+          {{ mode == Mode.ADD ? "Add location" : "Edit location" }}
+        </h1>
+        <button (click)="closeAddEditModal()" type="button" class="btn-close" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form [formGroup]="editForm">
+          <div class="container-fluid">
+            <!-- NAME FIELD -->
+            <div class="row mb-3">
+              <div class="col">
+                <label for="location-name" class="form-label">Name:</label>
+                <span class="red">*</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="name"
+                  id="location-name"
+                  placeholder="Name"
+                  [class.invalid-input]="name.invalid && showValidationErrors" />
+                @if (name.invalid && showValidationErrors) {
+                  @if (name.hasError("required")) {
+                    <div class="red">
+                      <small>Name is required.</small>
+                    </div>
+                  } @else if (name.hasError("locationNotUnique")) {
+                    <div class="red">
+                      <small>Location with this name already exists.</small>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- TRANSLATION FIELD -->
+            <div class="row mb-3">
+              <div class="col">
+                <label for="location-translation" class="form-label">Translation:</label>
+                <span class="red">*</span>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="translation"
+                  id="location-translation"
+                  placeholder="Translation"
+                  [class.invalid-input]="translation.invalid && showValidationErrors" />
+                @if (translation.invalid && showValidationErrors) {
+                  @if (translation.hasError("required")) {
+                    <div class="red">
+                      <small>Translation is required.</small>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- CONTINENT FIELD -->
+            <div class="row mb-3">
+              <div class="col">
+                <label for="location-continent" class="form-label">Continent:</label>
+                <span class="red">*</span>
+                <select
+                  class="form-select"
+                  formControlName="continent"
+                  id="location-continent"
+                  [class.invalid-input]="continent.invalid && showValidationErrors">
+                  <option [value]="selectAContinentText" disabled>{{ selectAContinentText }}</option>
+                  @for (continent of continentsUi; track $index) {
+                    <option [value]="continent">{{ continent }}</option>
+                  }
+                </select>
+                @if (continent.invalid && showValidationErrors) {
+                  @if (continent.hasError("continentNotSelected")) {
+                    <div class="red">
+                      <small>Continent is required.</small>
+                    </div>
+                  }
+                }
+              </div>
+            </div>
+
+            <!-- NOTES FIELD -->
+            <div class="row mb-3">
+              <div class="col">
+                <label for="location-notes" class="form-label">Notes:</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  formControlName="notes"
+                  id="location-notes"
+                  placeholder="Notes" />
+              </div>
+            </div>
+
+            <!-- ACCORDION -->
+            <div class="row mb-3">
+              <div class="col">
+                <div class="accordion" id="accordion-container">
+                  <!-- CHARACTERS -->
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#char-accordion"
+                        aria-expanded="true"
+                        aria-controls="char-accordion">
+                        Characters
+                      </button>
+                    </h2>
+                    <div id="char-accordion" class="accordion-collapse collapse">
+                      <div class="accordion-body">
+                        <input
+                          type="text"
+                          class="form-control mb-4"
+                          formControlName="characterFormFilter"
+                          id="characterFilter"
+                          placeholder="Filter characters..." />
+
+                        <div class="row">
+                          <div class="col-1">✓</div>
+                          <div class="col">Character:</div>
+                          <div class="col">Significant association:</div>
+                        </div>
+                        <hr />
+                        <div formArrayName="characterForms">
+                          @for (character of filteredCharacters; track character.form.get("trackingId")?.value) {
+                            <div class="row mb-1" [formGroupName]="character.index">
+                              <div class="col-1">
+                                <input class="form-check-input" type="checkbox" formControlName="selected" />
+                              </div>
+                              <div class="col">
+                                {{ character.form.get("name")?.value }}
+                              </div>
+                              <div class="col">
+                                <input
+                                  class="form-check-input"
+                                  type="checkbox"
+                                  formControlName="significantAssociation" />
+                              </div>
+                            </div>
+                          }
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- SAGAS -->
+                  <div class="accordion-item">
+                    <h2 class="accordion-header">
+                      <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#saga-accordion"
+                        aria-expanded="false"
+                        aria-controls="saga-accordion">
+                        Sagas
+                      </button>
+                    </h2>
+                    <div id="saga-accordion" class="accordion-collapse collapse">
+                      <div class="accordion-body">
+                        <input
+                          type="text"
+                          class="form-control mb-4"
+                          formControlName="sagaVersionFormFilter"
+                          id="sagaVersionFilter"
+                          placeholder="Filter sagas..." />
+
+                        <label class="form-label">Sagas mentioned:</label>
+                        @for (sagaVersion of filteredSagaVersionTitles; track $index) {
+                          <div class="form-check">
+                            <input
+                              class="form-check-input"
+                              type="checkbox"
+                              [checked]="sagaVersionChecked(sagaVersion.id)"
+                              (change)="toggleSagaVersion(sagaVersion.id)" />
+                            <label class="form-check-label">
+                              <i>{{ sagaVersion.title }}</i>
+                            </label>
+                          </div>
+                        }
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <!-- END OF FIELDS -->
+      <div class="modal-footer">
+        <button (click)="closeAddEditModal()" type="button" class="btn btn-secondary">Close</button>
+        <button
+          data-testid="save-button"
+          (click)="submitAddOrEdit()"
+          [disabled]="loading"
+          type="submit"
+          class="btn btn-primary spinner-button">
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            Save
+          }
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!--Delete modal-->
+<div
+  class="modal fade"
+  id="deleteLocation"
+  data-bs-backdrop="static"
+  data-bs-keyboard="false"
+  tabindex="-1"
+  aria-labelledby="staticBackdropLabel"
+  aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">Delete location?</h1>
+        <button (click)="closeDeleteModal()" type="button" class="btn-close" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <span>Are you sure?</span>
+      </div>
+      <div class="modal-footer">
+        <button (click)="closeDeleteModal()" type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          Back
+        </button>
+        <button (click)="deleteLocation()" data-testid="delete-confirm-button" type="submit" class="btn btn-danger">
+          Delete
+        </button>
+      </div>
     </div>
   </div>
 </div>

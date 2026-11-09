@@ -219,7 +219,7 @@ export class SagaSingle implements OnInit {
       }),
       description: new FormControl<string>(sagaVersion ? sagaVersion.description : "", { nonNullable: true }),
       locationFilter: new FormControl<string>("", { nonNullable: true }),
-      locationIds: new FormControl<number[]>(sagaVersion ? sagaVersion.characterNames.map((char) => char.id) : [], {
+      locationIds: new FormControl<number[]>(sagaVersion ? sagaVersion.locationNames.map((loc) => loc.id) : [], {
         nonNullable: true,
       }),
       characterFilter: new FormControl<string>("", { nonNullable: true }),
@@ -439,6 +439,7 @@ export class SagaSingle implements OnInit {
 
   locationChecked(sagaVersionForm: FormGroup, locationId: number) {
     const locationsInForm = sagaVersionForm.get("locationIds")?.value;
+    console.log("Location IDs: " + sagaVersionForm.get("locationIds")?.value);
     return locationsInForm ? locationsInForm.includes(locationId) : false;
   }
 

@@ -108,6 +108,34 @@
             }
           </div>
         }
+
+        <!-- Characters -->
+        @if (version.characterNames.length) {
+          <div class="row mb-5">
+            <h3 style="font-variant: small-caps">Characters</h3>
+            @for (character of version.characterNames; track $index) {
+              <span>
+                <a [routerLink]="['/characters', character.name]">
+                  {{ character.name }}
+                </a>
+              </span>
+            }
+          </div>
+        }
+
+        <!-- Locations -->
+        @if (version.locationNames.length) {
+          <div class="row mb-5">
+            <h3 style="font-variant: small-caps">Locations</h3>
+            @for (location of version.locationNames; track $index) {
+              <span>
+                <a [routerLink]="['/locations']" fragment="{{location.id}}">
+                  {{ location.name }} ({{ location.translation }})
+                </a>
+              </span>
+            }
+          </div>
+        }
       }
 
       <!-- Manuscripts -->
@@ -700,9 +728,7 @@
                                   formControlName="characterFilter"
                                   placeholder="Filter characters..." />
                                 @for (
-                                  character of filteredCharacters.get(
-                                    sagaVersionForm.get("trackingId")?.value ?? []
-                                  );
+                                  character of filteredCharacters.get(sagaVersionForm.get("trackingId")?.value ?? []);
                                   track $index
                                 ) {
                                   <div class="form-check">

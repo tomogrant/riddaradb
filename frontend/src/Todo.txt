@@ -16,3 +16,5 @@ TODO
   to regular users. Before this is toggled, the saga should be displayed only to authenticated
   users. This goes for the saga entry itself and all other pages. 
 * Consider adding link to articles for DOIs. 
+* Make sure ALL form submissions are trimmed before sending to server
+* Make sure sagas are filtered in every edit form

@@ -10,13 +10,13 @@ spring:
     hibernate:
       ddl-auto: update
     properties:
-      jakarta:
-        persistence:
-          schema-generation:
-            scripts:
-              action: create
-              create-source: metadata
-              create-target: schema-for-drawio.sql
+#      jakarta:
+#        persistence:
+#          schema-generation:
+#            scripts:
+#              action: create
+#              create-source: metadata
+#              create-target: schema-for-drawio.sql
       hibernate:
         format_sql: true
     database: postgresql

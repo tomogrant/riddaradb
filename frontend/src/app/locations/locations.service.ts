@@ -35,7 +35,7 @@ export class LocationsService {
 
   postLocation(location: ILocation): Observable<ILocation> {
     console.log("Posting location: " + JSON.stringify(location));
-    return this.httpClient.post<ILocation>(`${this.locationMain}/postuser`, location).pipe(
+    return this.httpClient.post<ILocation>(`${this.locationMain}/postlocation`, location).pipe(
       tap((data) => console.log("Location posted: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
@@ -43,14 +43,14 @@ export class LocationsService {
 
   putLocation(location: ILocation): Observable<ILocation> {
     console.log("Putting location: " + JSON.stringify(location));
-    return this.httpClient.put<ILocation>(`${this.locationMain}/putuser`, location).pipe(
+    return this.httpClient.put<ILocation>(`${this.locationMain}/putlocation`, location).pipe(
       tap((data) => console.log("Location updated: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
   }
 
   deleteLocation(id: number): Observable<null> {
-    return this.httpClient.delete<null>(`${this.locationMain}/deleteuser/${id}`).pipe(
+    return this.httpClient.delete<null>(`${this.locationMain}/deletelocation/${id}`).pipe(
       catchError(this.errorHandler)
     );
   }

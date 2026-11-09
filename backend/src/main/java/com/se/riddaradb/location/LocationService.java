@@ -160,9 +160,9 @@ public class LocationService {
                 locationEntity.removeCharacter(locationCharacterEntity.getCharacterEntity());
             };
 
-            locationEntity.getSagaVersionEntities().forEach(sagaVersion -> {
-                sagaVersion.removeLocation(locationEntity);
-            });
+            for (SagaVersionEntity sagaVersionEntity : new HashSet<>(locationEntity.getSagaVersionEntities())){
+                sagaVersionEntity.removeLocation(locationEntity);
+            };
 
             locationRepository.delete(locationEntity);
         });

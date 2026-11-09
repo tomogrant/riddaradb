@@ -173,6 +173,10 @@ public class MotifService {
 
             removeChildren(id);
 
+            for (SagaVersionMotifEntity sagaVersionMotifEntity : new HashSet<>(motifEntity.getSagaVersionMotifEntities())){
+                sagaVersionMotifEntity.getSagaVersionEntity().removeMotif(motifEntity);
+            };
+
             motifRepository.deleteById(id);
         }
         else{

@@ -1,0 +1,27 @@
+.dropdown-checkboxes {
+  max-height: 20vh;
+  overflow-y: auto;
+}
+
+.table-wrapper {
+  height: 82vh;
+  overflow-y: auto;
+  overflow-x: auto;
+  overflow-anchor: none;
+}
+
+.highlight-row td {
+  animation: flashWarning 3s ease-in-out forwards;
+}
+
+@keyframes flashWarning {
+  0% {
+    background-color: #fff3cd;
+  }
+  70% {
+    background-color: #fff3cd;
+  }
+  100% {
+    background-color: transparent;
+  }
+}

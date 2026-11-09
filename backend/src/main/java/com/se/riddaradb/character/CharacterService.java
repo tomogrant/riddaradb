@@ -149,9 +149,9 @@ public class CharacterService {
                 locationCharacterEntity.getLocationEntity().removeCharacter(characterEntity);
             }
 
-            characterEntity.getSagaVersionEntities().forEach(sagaVersionEntity -> {
+            for (SagaVersionEntity sagaVersionEntity : new HashSet<>(characterEntity.getSagaVersionEntities())) {
                 sagaVersionEntity.removeCharacter(characterEntity);
-            });
+            }
 
             characterRepository.delete(characterEntity);
         });

@@ -53,7 +53,6 @@ export class BibSingle {
 
   sagas: ISagaTitleDto[] = [];
   attachedSagas: ISagaTitleDto[] = [];
-  sagaIds: number[] = [];
 
   defaultPublicationTypeOption: string = "Select publication type:";
 
@@ -81,6 +80,7 @@ export class BibSingle {
       pageNumbers: new FormControl<string>("", { nonNullable: true }),
       recommended: new FormControl<boolean>(false, { nonNullable: true }),
       description: new FormControl<string>("", { nonNullable: true }),
+      sagaIds: new FormControl<number[]>([], { nonNullable: true }),
     },
     [this.authorsEditorsTranslatorsNotProvided()],
   );
@@ -175,6 +175,9 @@ export class BibSingle {
   get description(): FormControl<string> {
     return this.editForm.controls.description;
   }
+  get sagaIds(): FormControl<number[]> {
+    return this.editForm.controls.sagaIds;
+  }
 
   ngOnInit() {
     this.initialise();
@@ -234,9 +237,9 @@ export class BibSingle {
           this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id) && saga.published);
         }
       },
-      error: err => {
+      error: (err) => {
         "Error fetching sagas: " + JSON.stringify(err);
-      }
+      },
     });
   }
 
@@ -453,20 +456,15 @@ export class BibSingle {
   //  USER CHOICE
   //---------------
 
-  boxChecked(saga: ISagaTitleDto) {
-    if (this.activeBib.sagaIds.includes(saga.id)) {
-      return true;
-    } else {
-      return false;
-    }
+  sagaChecked(id: number): boolean {
+    return this.sagaIds.value.includes(id);
   }
 
-  addRemoveSaga(saga: ISagaTitleDto) {
-    if (this.activeBib.sagaIds.includes(saga.id)) {
-      this.activeBib.sagaIds.splice(this.activeBib.sagaIds.indexOf(saga.id), 1);
-    } else {
-      this.activeBib.sagaIds.push(saga.id);
-    }
+  toggleSaga(id: number) {
+    const ids: number[] = this.sagaIds.value;
+
+    //If sagaIds form includes id, filter it out. If not, add it.
+    this.sagaIds.setValue(ids.includes(id) ? ids.filter((idsInForm) => idsInForm !== id) : [...ids, id]);
   }
 
   addBib() {
@@ -644,6 +642,12 @@ export class BibSingle {
     } else {
       this.description.reset();
     }
+
+    if (this.editFormConfig.includeSagas) {
+      this.sagaIds.setValue(this.activeBib.sagaIds);
+    } else {
+      this.sagaIds.reset();
+    }
   }
 
   fillBibDto() {
@@ -708,6 +712,8 @@ export class BibSingle {
     } else {
       this.activeBib.description = this.description.defaultValue;
     }
+
+    this.activeBib.sagaIds = this.editFormConfig.includeSagas ? this.sagaIds.value : this.sagaIds.defaultValue;
   }
 
   navigateToBibEntryPage(id: number) {

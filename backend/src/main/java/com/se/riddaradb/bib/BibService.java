@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 @Service
@@ -59,7 +60,7 @@ public class BibService {
     public void deleteBibEntryById(int id){
 
         bibRepository.findById(id).ifPresent(bibEntity -> {
-            for (SagaEntity sagaEntity : bibEntity.getSagaEntities()){
+            for (SagaEntity sagaEntity : new HashSet<>(bibEntity.getSagaEntities())){
                 sagaEntity.removeBib(bibEntity);
             }
 
