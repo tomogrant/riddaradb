@@ -31,11 +31,14 @@ export class About {
     return this.editForm.controls.text;
   }
 
+  initialising: boolean = false;
   loading: boolean = false;
 
   ngOnInit() {
+    this.initialising = true;
     this.landingService.getAboutText().subscribe({
       next: (receivedText) => {
+        this.initialising = false;
         this.aboutText = { ...receivedText };
       },
       error: (err) => {

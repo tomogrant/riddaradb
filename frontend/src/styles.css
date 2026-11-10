@@ -163,3 +163,16 @@ p {
 
 /* Bootstrap adds padding to highlighting, which is not wanted on the motif page */
 mark { padding: 0; }
+
+
+/* Bootstrap styles the dropdown caret in ::after, so this styling applies to that */
+.dropdown-toggle::after {
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+/* Used to wrap for loops in modals for linking entities. Makes options scrollable */
+.modal-options-scroll {
+  max-height: 35vh;
+  overflow-y: auto;
+}

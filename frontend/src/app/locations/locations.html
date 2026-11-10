@@ -2,6 +2,7 @@
 
 <div class="card-body page-container">
   <div class="container">
+    <!-- FILTER BAR -->
     <div class="card p-3 custom-shadow-larger beige">
       <div class="row">
         <div class="col-12 col-md-9 col-lg-6">
@@ -57,7 +58,7 @@
               <form class="px-3 py-2" [formGroup]="editForm">
                 <input
                   type="text"
-                  class="form-control mb-2"
+                  class="form-control form-control-sm mb-2"
                   formControlName="sagaVersionFormFilter"
                   placeholder="Filter sagas..." />
                 <div class="dropdown-checkboxes">
@@ -83,14 +84,15 @@
         </div>
         <div class="col">
           @if ($loggedIn()) {
-            <button (click)="addLocation()" type="button" class="btn btn-outline-success bi bi-plus-lg"></button>
+            <button (click)="addLocation()" type="button" class="btn btn-outline-success">Add location</button>
           }
         </div>
       </div>
     </div>
 
+    <!-- LOCATION TABLE -->
     @if (initialising) {
-      <div class="spinner-border spinner-border-lg ms-3 mt-3" role="status"> </div>
+      <div class="spinner-border spinner-border-lg ms-3 my-3" role="status"> </div>
     } @else {
       <div class="table-responsive-md table-wrapper pt-3 mb-4">
         <table class="table table-hover">
@@ -134,18 +136,28 @@
                 </td>
                 <td>
                   @for (locationCharacterDto of location.locationCharacterDtos; track $index) {
-                    <span>{{ locationCharacterDto.characterName }}</span>
+                    <a [routerLink]="['/characters']" fragment="{{ locationCharacterDto.characterId }}">
+                      <span>
+                        <span>{{ locationCharacterDto.characterName }}</span>
+                        @if (locationCharacterDto.significantAssociation) {
+                          <span class="red">*</span>
+                        }
+                      </span>
+                    </a>
+                    @if ($index + 1 < location.locationCharacterDtos.length) {
+                      <span>, </span>
+                    }
                   }
                 </td>
                 <td>{{ location.notes }}</td>
                 @if ($loggedIn()) {
                   <td>
-                    <div>
+                    <div class="d-flex gap-1">
                       <!-- Edit button -->
                       <button
                         data-testid="edit-button"
                         type="button"
-                        class="btn btn-outline-secondary btn-sm me-2 bi bi-pencil-fill"
+                        class="btn btn-outline-secondary btn-sm bi bi-pencil-fill"
                         (click)="editLocation(location.id!)">
                       </button>
                       <!-- Delete button -->
@@ -164,34 +176,36 @@
       </div>
     }
 
-    <div class="row">
-      <div class="col-auto">
-        <div class="btn-group" role="group" aria-label="Table page nav buttons">
-          <button
-            type="button"
-            class="btn btn-primary bi bi-chevron-left"
-            [disabled]="this.$currentPage() === 1"
-            (click)="goToPage(this.$currentPage() - 1)"></button>
-          @for (page of $pagesIterable(); track $index) {
+    @if (!initialising) {
+      <div class="row">
+        <div class="col-auto">
+          <div class="btn-group" role="group" aria-label="Table page nav buttons">
             <button
               type="button"
-              class="btn btn-outline-primary"
-              (click)="goToPage(page)"
-              [class.active]="page === this.$currentPage()"
-              >{{ page }}</button
-            >
-          }
-          <button
-            type="button"
-            class="btn btn-primary bi bi-chevron-right"
-            [disabled]="this.$currentPage() === this.$totalPages()"
-            (click)="goToPage(this.$currentPage() + 1)"></button>
+              class="btn btn-primary bi bi-chevron-left"
+              [disabled]="this.$currentPage() === 1"
+              (click)="goToPage(this.$currentPage() - 1)"></button>
+            @for (page of $pagesIterable(); track $index) {
+              <button
+                type="button"
+                class="btn btn-outline-primary"
+                (click)="goToPage(page)"
+                [class.active]="page === this.$currentPage()"
+                >{{ page }}</button
+              >
+            }
+            <button
+              type="button"
+              class="btn btn-primary bi bi-chevron-right"
+              [disabled]="this.$currentPage() === this.$totalPages()"
+              (click)="goToPage(this.$currentPage() + 1)"></button>
+          </div>
+        </div>
+        <div class="col ms-1 mt-1">
+          <span>{{ $pageText() }}</span>
         </div>
       </div>
-      <div class="col ms-1 mt-1">
-        <span>{{ $pageText() }}</span>
-      </div>
-    </div>
+    }
   </div>
 </div>
 
@@ -204,7 +218,7 @@
   tabindex="-1"
   aria-labelledby="staticBackdropLabel"
   aria-hidden="true">
-  <div class="modal-dialog modal-dialog-scrollable modal-lg">
+  <div class="modal-dialog modal-dialog-scrollable">
     <div class="modal-content">
       <div class="modal-header">
         <h1 class="modal-title fs-5" id="staticBackdropLabel">
@@ -333,7 +347,7 @@
                           <div class="col">Significant association:</div>
                         </div>
                         <hr />
-                        <div formArrayName="characterForms">
+                        <div formArrayName="characterForms" class="modal-options-scroll">
                           @for (character of filteredCharacters; track character.form.get("trackingId")?.value) {
                             <div class="row mb-1" [formGroupName]="character.index">
                               <div class="col-1">
@@ -378,18 +392,20 @@
                           placeholder="Filter sagas..." />
 
                         <label class="form-label">Sagas mentioned:</label>
-                        @for (sagaVersion of filteredSagaVersionTitles; track $index) {
-                          <div class="form-check">
-                            <input
-                              class="form-check-input"
-                              type="checkbox"
-                              [checked]="sagaVersionChecked(sagaVersion.id)"
-                              (change)="toggleSagaVersion(sagaVersion.id)" />
-                            <label class="form-check-label">
-                              <i>{{ sagaVersion.title }}</i>
-                            </label>
-                          </div>
-                        }
+                        <div class="modal-options-scroll">
+                          @for (sagaVersion of filteredSagaVersionTitles; track $index) {
+                            <div class="form-check">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                [checked]="sagaVersionChecked(sagaVersion.id)"
+                                (change)="toggleSagaVersion(sagaVersion.id)" />
+                              <label class="form-check-label">
+                                <i>{{ sagaVersion.title }}</i>
+                              </label>
+                            </div>
+                          }
+                        </div>
                       </div>
                     </div>
                   </div>

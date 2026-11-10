@@ -31,11 +31,14 @@ export class Home {
     return this.editForm.controls.text;
   }
 
+  initialising: boolean = false;
   loading: boolean = false;
 
   ngOnInit() {
+    this.initialising = true;
     this.landingService.getHomeText().subscribe({
       next: (receivedText) => {
+        this.initialising = false;
         this.homeText = { ...receivedText };
       },
       error: (err) => {

@@ -15,6 +15,7 @@ import { ValidatorFn, AbstractControl, ValidationErrors } from "@angular/forms";
 import { Title } from "@angular/platform-browser";
 import { PageHeader } from "../../page-header/page-header";
 import { AuthService } from "../../auth/auth.service";
+import { debounceTime, distinctUntilChanged } from "rxjs";
 
 @Component({
   selector: "app-ms-single",
@@ -40,6 +41,7 @@ export class MsSingle {
     entryLink: new FormControl<string>("", {nonNullable: true}),
     description: new FormControl<string>("", {nonNullable: true}),
     msSagas: new FormArray<FormGroup>([]),
+    sagaFilter: new FormControl<string>("", {nonNullable: true})
   });
 
   get id(): FormControl<number | null> {
@@ -70,6 +72,10 @@ export class MsSingle {
     return this.editForm.controls.msSagas;
   }
 
+  get sagaFilter(): FormControl<string> {
+    return this.editForm.controls.sagaFilter
+  }
+
   showValidationErrors: boolean = false;
 
   sagas: ISagaTitleDto[] = [];
@@ -79,6 +85,11 @@ export class MsSingle {
   repo: IMsRepositoryDto = this.initialiseRepository();
   initialising: boolean = false;
   loading: boolean = false;
+
+  filteredSagaForms: {
+    form: FormGroup;
+    index: number;
+  }[] = [];
 
   readonly Mode = Mode;
   mode: Mode = Mode.NONE;
@@ -125,6 +136,10 @@ export class MsSingle {
       console.log("parameter is incorrect");
       this.navigateToMsAllPage();
     }
+
+    this.sagaFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
+      next: (value) => this.updateSagaFilter(value ? String(value).trim().toLowerCase() : ""),
+    });
   }
 
     parameterValid(param: string | null): number | null {
@@ -142,6 +157,8 @@ export class MsSingle {
       var msSaga = this.activeMs.msSagaDtos.find((msSagaInMs) => msSagaInMs.sagaId == saga.id);
       this.msSagas.push(this.createSagaMsFormGroup(saga, msSaga));
     });
+
+    this.updateSagaFilter("");
   }
 
   createSagaMsFormGroup(saga: ISagaTitleDto, msSaga?: IMsSaga): FormGroup {
@@ -216,6 +233,8 @@ export class MsSingle {
   editMs() {
     this.mode = Mode.EDIT;
     this.showValidationErrors = false;
+    //Recreate forms to refresh potentially stale input
+    this.initialiseSagaMsForms();
 
     this.id.setValue(this.activeMs.id);
     this.name.setValue(this.activeMs.name ?? "");
@@ -230,7 +249,7 @@ export class MsSingle {
   addMs() {
     this.mode = Mode.ADD;
     this.showValidationErrors = false;
-
+    this.sagaFilter.setValue("");
     //Form is already initialised, so no need to reset values here
     this.openAddEditModal();
   }
@@ -270,6 +289,15 @@ export class MsSingle {
     } else {
       this.showValidationErrors = true;
     }
+  }
+
+  updateSagaFilter(searchTerm: string = "") {
+    this.filteredSagaForms = this.msSagas.controls
+      //Maps MS form and its index into object corresponding with filteredMsForms.
+      //Index is the second argument of map().
+      .map((form, index) => ({ form: form, index: index }))
+      //Filter to only include those MS forms whose shelfmark matches query
+      .filter((form) => String(form.form.get("sagaTitle")?.value).trim().toLowerCase().includes(searchTerm));
   }
 
   getSagas() {

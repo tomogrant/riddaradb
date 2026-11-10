@@ -12,9 +12,7 @@ TODO
 * Double check italicisation and such for bib page.
 * Add volume field to website 
 * Fix the ordering of motifs 
-* Add a 'Publish' button to the saga edit modal which will actually display the saga
-  to regular users. Before this is toggled, the saga should be displayed only to authenticated
-  users. This goes for the saga entry itself and all other pages. 
 * Consider adding link to articles for DOIs. 
 * Make sure ALL form submissions are trimmed before sending to server
 * Make sure sagas are filtered in every edit form
+* Check that all text fields are non-null by default and add non-null checks to the backend

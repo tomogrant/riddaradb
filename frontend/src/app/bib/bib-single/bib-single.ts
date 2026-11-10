@@ -23,6 +23,7 @@ import { ISagaTitleDto } from "../../sagas/common/ISagaTitleDto";
 import { PageHeader } from "../../page-header/page-header";
 import { AuthService } from "../../auth/auth.service";
 import { HttpErrorResponse } from "@angular/common/http";
+import { debounceTime, distinctUntilChanged } from "rxjs";
 
 @Component({
   selector: "app-bibs",
@@ -52,6 +53,7 @@ export class BibSingle {
   activeBibVm: IBibVm = this.initialiseBibVm();
 
   sagas: ISagaTitleDto[] = [];
+  filteredSagas: ISagaTitleDto[] = [];
   attachedSagas: ISagaTitleDto[] = [];
 
   defaultPublicationTypeOption: string = "Select publication type:";
@@ -80,6 +82,7 @@ export class BibSingle {
       pageNumbers: new FormControl<string>("", { nonNullable: true }),
       recommended: new FormControl<boolean>(false, { nonNullable: true }),
       description: new FormControl<string>("", { nonNullable: true }),
+      sagaFilter: new FormControl<string>("", { nonNullable: true }),
       sagaIds: new FormControl<number[]>([], { nonNullable: true }),
     },
     [this.authorsEditorsTranslatorsNotProvided()],
@@ -175,6 +178,9 @@ export class BibSingle {
   get description(): FormControl<string> {
     return this.editForm.controls.description;
   }
+  get sagaFilter(): FormControl<string> {
+    return this.editForm.controls.sagaFilter;
+  }
   get sagaIds(): FormControl<number[]> {
     return this.editForm.controls.sagaIds;
   }
@@ -236,6 +242,8 @@ export class BibSingle {
         } else {
           this.attachedSagas = this.sagas.filter((saga) => this.activeBib.sagaIds.includes(saga.id) && saga.published);
         }
+
+        this.updateSagaFilter();
       },
       error: (err) => {
         "Error fetching sagas: " + JSON.stringify(err);
@@ -297,6 +305,16 @@ export class BibSingle {
         this.setUpValidation();
       },
     });
+
+    this.sagaFilter.valueChanges.pipe(debounceTime(250), distinctUntilChanged()).subscribe({
+      next: (value) => this.updateSagaFilter(value ? String(value).trim().toLowerCase() : ""),
+    });
+  }
+
+  updateSagaFilter(searchTerm: string = "") {
+    this.filteredSagas = this.sagas.filter((saga) =>
+      saga.title.toLowerCase().includes(searchTerm.toLowerCase()),
+    );
   }
 
   setConfig(publicationType: PublicationType) {
@@ -472,12 +490,14 @@ export class BibSingle {
 
     this.activeBib = this.initialiseBib();
     this.loading = false;
+    this.updateSagaFilter();
     this.openAddEditModal();
   }
 
   editBib() {
     this.mode = Mode.EDIT;
     this.loading = false;
+    this.updateSagaFilter();
     this.openAddEditModal();
 
     //Shouldn't be possible

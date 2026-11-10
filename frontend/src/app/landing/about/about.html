@@ -11,7 +11,11 @@
 
   <div class="row">
     <div class="col">
-      <div [innerHTML]="aboutText.text"></div>
+      @if (initialising) {
+        <div class="spinner-border spinner-border-lg" role="status"> </div>
+      } @else {
+        <div [innerHTML]="aboutText.text"></div>
+      }
     </div>
   </div>
 </div>
@@ -43,12 +47,12 @@
                   placeholder="'About' text"
                   [modules]="{
                     toolbar: [
-                      [{ 'header': 1 }, { 'header': 2 }], 
+                      [{ header: 1 }, { header: 2 }],
                       ['bold', 'italic', 'underline'],
                       [{ list: 'ordered' }, { list: 'bullet' }],
                       [{ script: 'sub' }, { script: 'super' }],
-                      [{ 'align': [] }],
-                      ['link', 'image', 'video']  
+                      [{ align: [] }],
+                      ['link', 'image', 'video'],
                     ],
                   }"></quill-editor>
               </div>
@@ -60,8 +64,17 @@
       <!-- END OF FIELDS -->
       <div class="modal-footer">
         <button (click)="closeEditModal()" type="button" class="btn btn-secondary"> Close </button>
-        <button data-testid="save-button" (click)="saveText()" type="submit" class="btn btn-primary">
-          <div> Submit</div>
+        <button
+          data-testid="save-button"
+          (click)="saveText()"
+          type="submit"
+          [disabled]="loading"
+          class="btn btn-primary spinner-button">
+          @if (loading) {
+            <div class="spinner-border spinner-border-sm" role="status"> </div>
+          } @else {
+            <div> Submit</div>
+          }
         </button>
       </div>
     </div>

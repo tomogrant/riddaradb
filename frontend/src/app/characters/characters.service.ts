@@ -35,7 +35,7 @@ export class CharactersService {
 
   postCharacter(character: ICharacter): Observable<ICharacter> {
     console.log("Posting character: " + JSON.stringify(character));
-    return this.httpClient.post<ICharacter>(`${this.characterMain}/postuser`, character).pipe(
+    return this.httpClient.post<ICharacter>(`${this.characterMain}/postcharacter`, character).pipe(
       tap((data) => console.log("Character posted: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
@@ -43,14 +43,14 @@ export class CharactersService {
 
   putCharacter(character: ICharacter): Observable<ICharacter> {
     console.log("Putting character: " + JSON.stringify(character));
-    return this.httpClient.put<ICharacter>(`${this.characterMain}/putuser`, character).pipe(
+    return this.httpClient.put<ICharacter>(`${this.characterMain}/putcharacter`, character).pipe(
       tap((data) => console.log("Character updated: " + JSON.stringify(data))),
       catchError(this.errorHandler),
     );
   }
 
   deleteCharacter(id: number): Observable<null> {
-    return this.httpClient.delete<null>(`${this.characterMain}/deleteuser/${id}`).pipe(catchError(this.errorHandler));
+    return this.httpClient.delete<null>(`${this.characterMain}/deletecharacter/${id}`).pipe(catchError(this.errorHandler));
   }
 
   private errorHandler(error: HttpErrorResponse) {

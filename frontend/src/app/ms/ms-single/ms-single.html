@@ -218,6 +218,16 @@
             <div class="row my-3">
               <div class="col">Assign sagas to this manuscript:</div>
             </div>
+            <div class="row">
+              <div class="col">
+                <input
+                  type="text"
+                  class="form-control mb-1"
+                  formControlName="sagaFilter"
+                  id="sagaFilter"
+                  placeholder="Filter sagas..." />
+              </div>
+            </div>
             <div class="row my-2">
               <div class="col-1">✓</div>
               <div class="col">Saga</div>
@@ -227,14 +237,14 @@
 
             <hr />
 
-            <div formArrayName="msSagas">
-              @for (msSaga of msSagas.controls; track msSaga.get("trackingId")?.value; let i = $index) {
-                <div class="row mb-1" [formGroupName]="i">
+            <div formArrayName="msSagas" class="modal-options-scroll">
+              @for (msSaga of filteredSagaForms; track msSaga.form.get("trackingId")?.value) {
+                <div class="row mb-1" [formGroupName]="msSaga.index">
                   <div class="col-1">
                     <input class="form-check-input" type="checkbox" formControlName="selected" />
                   </div>
                   <div class="col">
-                    <i>{{ msSaga.get("sagaTitle")?.value }}</i>
+                    <i>{{ msSaga.form.get("sagaTitle")?.value }}</i>
                   </div>
                   <!-- Folio nr -->
                   <div class="col">
@@ -242,9 +252,9 @@
                       type="text"
                       class="form-control"
                       formControlName="folioNumber"
-                      [class.invalid-input]="msSaga.get('folioNumber')?.invalid && showValidationErrors" />
-                    @if (msSaga.get("folioNumber")?.invalid && showValidationErrors) {
-                      @if (msSaga.get("folioNumber")?.hasError("required")) {
+                      [class.invalid-input]="msSaga.form.get('folioNumber')?.invalid && showValidationErrors" />
+                    @if (msSaga.form.get("folioNumber")?.invalid && showValidationErrors) {
+                      @if (msSaga.form.get("folioNumber")?.hasError("required")) {
                         <div class="red">
                           <small>Folio number is required.</small>
                         </div>

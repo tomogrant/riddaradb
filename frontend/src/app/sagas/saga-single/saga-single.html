@@ -129,7 +129,7 @@
             <h3 style="font-variant: small-caps">Locations</h3>
             @for (location of version.locationNames; track $index) {
               <span>
-                <a [routerLink]="['/locations']" fragment="{{location.id}}">
+                <a [routerLink]="['/locations']" fragment="{{ location.id }}">
                   {{ location.name }} ({{ location.translation }})
                 </a>
               </span>
@@ -399,16 +399,18 @@
                           formControlName="bibFilter"
                           id="bibFilter"
                           placeholder="Filter relevant scholarship..." />
-                        @for (bib of filteredBibVms; track $index) {
-                          <div class="form-check">
-                            <input
-                              class="form-check-input"
-                              type="checkbox"
-                              [checked]="bibChecked(bib.id)"
-                              (change)="toggleBib(bib.id)" />
-                            <label class="form-check-label"><span [innerHTML]="bib.bibliographyEntry"></span></label>
-                          </div>
-                        }
+                        <div class="modal-options-scroll">
+                          @for (bib of filteredBibVms; track $index) {
+                            <div class="form-check">
+                              <input
+                                class="form-check-input"
+                                type="checkbox"
+                                [checked]="bibChecked(bib.id)"
+                                (change)="toggleBib(bib.id)" />
+                              <label class="form-check-label"><span [innerHTML]="bib.bibliographyEntry"></span></label>
+                            </div>
+                          }
+                        </div>
                       </div>
                       <!-- End of accordion body -->
                     </div>
@@ -445,7 +447,7 @@
                         <hr />
                         <!-- Although filteredMsForms is used for display, msForms is the collection
                          actually being modified. msForm.index is also taken from msForms. -->
-                        <div formArrayName="msForms">
+                        <div formArrayName="msForms" class="modal-options-scroll">
                           @for (msForm of filteredMsForms; track msForm.form.get("trackingId")?.value) {
                             <div class="row mb-1" [formGroupName]="msForm.index">
                               <div class="col-1">
@@ -505,23 +507,25 @@
                                 class="form-control mb-4"
                                 formControlName="characterFilter"
                                 placeholder="Filter characters..." />
-                              @for (
-                                character of filteredCharacters.get(
-                                  sagaVersionForms.controls[0].get("trackingId")?.value ?? []
-                                );
-                                track $index
-                              ) {
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    [checked]="characterChecked(sagaVersionForms.controls[0], character.id)"
-                                    (change)="toggleCharacter(sagaVersionForms.controls[0], character.id)" />
-                                  <label class="form-check-label"
-                                    ><span>{{ character.name }}</span></label
-                                  >
-                                </div>
-                              }
+                              <div class="modal-options-scroll">
+                                @for (
+                                  character of filteredCharacters.get(
+                                    sagaVersionForms.controls[0].get("trackingId")?.value ?? []
+                                  );
+                                  track $index
+                                ) {
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      [checked]="characterChecked(sagaVersionForms.controls[0], character.id)"
+                                      (change)="toggleCharacter(sagaVersionForms.controls[0], character.id)" />
+                                    <label class="form-check-label"
+                                      ><span>{{ character.name }}</span></label
+                                    >
+                                  </div>
+                                }
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -551,23 +555,25 @@
                                 class="form-control mb-4"
                                 formControlName="locationFilter"
                                 placeholder="Filter locations..." />
-                              @for (
-                                location of filteredLocations.get(
-                                  sagaVersionForms.controls[0].get("trackingId")?.value ?? []
-                                );
-                                track $index
-                              ) {
-                                <div class="form-check">
-                                  <input
-                                    class="form-check-input"
-                                    type="checkbox"
-                                    [checked]="locationChecked(sagaVersionForms.controls[0], location.id)"
-                                    (change)="toggleLocation(sagaVersionForms.controls[0], location.id)" />
-                                  <label class="form-check-label"
-                                    ><span>{{ location.name }}</span></label
-                                  >
-                                </div>
-                              }
+                              <div class="modal-options-scroll">
+                                @for (
+                                  location of filteredLocations.get(
+                                    sagaVersionForms.controls[0].get("trackingId")?.value ?? []
+                                  );
+                                  track $index
+                                ) {
+                                  <div class="form-check">
+                                    <input
+                                      class="form-check-input"
+                                      type="checkbox"
+                                      [checked]="locationChecked(sagaVersionForms.controls[0], location.id)"
+                                      (change)="toggleLocation(sagaVersionForms.controls[0], location.id)" />
+                                    <label class="form-check-label"
+                                      ><span>{{ location.name }}</span></label
+                                    >
+                                  </div>
+                                }
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -727,21 +733,23 @@
                                   class="form-control mb-4"
                                   formControlName="characterFilter"
                                   placeholder="Filter characters..." />
-                                @for (
-                                  character of filteredCharacters.get(sagaVersionForm.get("trackingId")?.value ?? []);
-                                  track $index
-                                ) {
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      [checked]="characterChecked(sagaVersionForm, character.id)"
-                                      (change)="toggleCharacter(sagaVersionForm, character.id)" />
-                                    <label class="form-check-label"
-                                      ><span>{{ character.name }}</span></label
-                                    >
-                                  </div>
-                                }
+                                <div class="modal-options-scroll">
+                                  @for (
+                                    character of filteredCharacters.get(sagaVersionForm.get("trackingId")?.value ?? []);
+                                    track $index
+                                  ) {
+                                    <div class="form-check">
+                                      <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [checked]="characterChecked(sagaVersionForm, character.id)"
+                                        (change)="toggleCharacter(sagaVersionForm, character.id)" />
+                                      <label class="form-check-label"
+                                        ><span>{{ character.name }}</span></label
+                                      >
+                                    </div>
+                                  }
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -766,21 +774,23 @@
                                   class="form-control mb-4"
                                   formControlName="locationFilter"
                                   placeholder="Filter locations..." />
-                                @for (
-                                  location of filteredLocations.get(sagaVersionForm.get("trackingId")?.value ?? []);
-                                  track $index
-                                ) {
-                                  <div class="form-check">
-                                    <input
-                                      class="form-check-input"
-                                      type="checkbox"
-                                      [checked]="locationChecked(sagaVersionForm, location.id)"
-                                      (change)="toggleLocation(sagaVersionForm, location.id)" />
-                                    <label class="form-check-label"
-                                      ><span>{{ location.name }}</span></label
-                                    >
-                                  </div>
-                                }
+                                <div class="modal-options-scroll">
+                                  @for (
+                                    location of filteredLocations.get(sagaVersionForm.get("trackingId")?.value ?? []);
+                                    track $index
+                                  ) {
+                                    <div class="form-check">
+                                      <input
+                                        class="form-check-input"
+                                        type="checkbox"
+                                        [checked]="locationChecked(sagaVersionForm, location.id)"
+                                        (change)="toggleLocation(sagaVersionForm, location.id)" />
+                                      <label class="form-check-label"
+                                        ><span>{{ location.name }}</span></label
+                                      >
+                                    </div>
+                                  }
+                                </div>
                               </div>
                             </div>
                           </div>

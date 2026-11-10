@@ -227,18 +227,30 @@
               <div class="row mb-2 mt-1">
                 <div class="col">
                   <label class="form-label">Sagas mentioned:</label>
-                  @for (saga of sagas; track $index) {
-                    <div class="form-check">
+                  <div class="row">
+                    <div class="col">
                       <input
-                        class="form-check-input"
-                        type="checkbox"
-                        [checked]="sagaChecked(saga.id)"
-                        (change)="toggleSaga(saga.id)" />
-                      <label class="form-check-label">
-                        <i>{{ saga.title }}</i>
-                      </label>
+                        type="text"
+                        class="form-control mb-4"
+                        formControlName="sagaFilter"
+                        id="sagaFilter"
+                        placeholder="Filter sagas..." />
                     </div>
-                  }
+                  </div>
+                  <div class="modal-options-scroll">
+                    @for (saga of filteredSagas; track $index) {
+                      <div class="form-check">
+                        <input
+                          class="form-check-input"
+                          type="checkbox"
+                          [checked]="sagaChecked(saga.id)"
+                          (change)="toggleSaga(saga.id)" />
+                        <label class="form-check-label">
+                          <i>{{ saga.title }}</i>
+                        </label>
+                      </div>
+                    }
+                  </div>
                 </div>
               </div>
             }

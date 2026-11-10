@@ -1,6 +1,6 @@
 import { Component, inject, effect, computed, signal } from "@angular/core";
 import { ActivatedRoute, ParamMap, RouterLink } from "@angular/router";
-import { form, FormField, required } from "@angular/forms/signals";
+import { debounce, form, FormField, required } from "@angular/forms/signals";
 import { MotifNode } from "../motif-node/motif-node";
 import { Modal } from "bootstrap";
 import { MotifStore } from "../common/motif.store";
@@ -10,11 +10,6 @@ import { QuillModule } from "ngx-quill";
 import { IMotifForm } from "../common/IMotifForm";
 import { PageHeader } from "../../page-header/page-header";
 import { AuthService } from "../../auth/auth.service";
-
-export interface MotifDetails {
-  pageChapterNumber: string | null;
-  inBoberg: boolean;
-}
 
 @Component({
   selector: "app-motifs-all",
@@ -56,6 +51,10 @@ export class MotifsAll {
   $searchLoading = computed(() => this.motifStore.$searchLoading());
   $searchActive = computed(() => this.motifStore.$searchActive());
   $sagas = computed(() => this.motifStore.$sagaTitles());
+  $filteredSagas = computed(() => {
+    const sagas = this.$sagas();
+    return sagas.filter(saga => saga.title.includes(this.filterForm.filterTerm().value().toLowerCase().trim()));
+  });
   $sagaMap = computed(() => new Map(this.$sagas().map((saga) => [saga.id, saga])));
 
   //Array signal for convenient display of pinboard.
@@ -87,7 +86,14 @@ export class MotifsAll {
     searchTerm: "",
   });
 
+  $filterModel = signal({
+    filterTerm: "",
+  });
+
   searchForm = form(this.$searchModel);
+  filterForm = form(this.$filterModel, (schemaPath) => {
+    debounce(schemaPath.filterTerm, 250);
+  });
 
   //SIGNALS
   $rootIds = this.motifStore.$rootIds;
@@ -97,7 +103,13 @@ export class MotifsAll {
   $showColourCoding = computed(() => this.motifStore.$showColourCoding());
 
   readonly selectedSagaMap = computed(() => {
-    const map = new Map<number, MotifDetails>();
+    const map = new Map<
+      number,
+      {
+        pageChapterNumber: string | null;
+        inBoberg: boolean;
+      }
+    >();
 
     for (const saga of this.$editModel().sagas) {
       map.set(saga.sagaVersionId, {
@@ -186,7 +198,7 @@ export class MotifsAll {
   }
 
   //Called when a page/chapter number field associated with a saga changes
-  pageChapterNumberUpdate(id: number, pageChapterNumber: string) {
+  updatePageChapterNumber(id: number, pageChapterNumber: string) {
     this.$editModel.update((current) => {
       return {
         ...current,
@@ -234,8 +246,8 @@ export class MotifsAll {
   }
 
   setForm() {
-    console.log("setForm called");
     this.showValidationErrors = false;
+    this.filterForm.filterTerm().value.set("");
     const currentNode = this.$currentNode();
     if (this.$modalState()?.mode == Mode.ADD) {
       this.$editModel.set(this.createNewMotifForm());
